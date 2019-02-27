@@ -21,7 +21,12 @@ namespace PEC_Collect
         //  is more than a degree celsius different from the last @autofocus2 time.
         //  if so, @autofocus2 is called again, although the telescope is not slewed.  And so on.
 
-        public static string Check()
+        /// <summary>
+        /// Checks temp and runs autofocus 2 or 3 if exceeds one degree
+        /// </summary>
+        /// <param name="AtFocus2"></param>
+        /// <returns></returns>
+        public static string Check(bool AtFocus3)
         {
             //check to see if current temperature is a degree different from last temperature
             //  If so, then set up and run @focus2
@@ -56,14 +61,29 @@ namespace PEC_Collect
                 afLastTemp = currentTemp;
                 int syncSave = tsxc.Asynchronous;
                 tsxc.Asynchronous = 0;
-                try
+                if (AtFocus3)
                 {
-                    int focStat = tsxc.AtFocus2();
+                    try
+                    {
+                        int focStat = tsxc.AtFocus3(3,true);
+                    }
+                    catch (Exception e)
+                    {
+                        tsxc.Asynchronous = syncSave;
+                        return ("Focus Check: " + e.Message);
+                    }
                 }
-                catch (Exception e)
+                else
                 {
-                    tsxc.Asynchronous = syncSave;
-                    return ("Focus Check: " + e.Message);
+                    try
+                    {
+                        int focStat = tsxc.AtFocus2();
+                    }
+                    catch (Exception e)
+                    {
+                        tsxc.Asynchronous = syncSave;
+                        return ("Focus Check: " + e.Message);
+                    }
                 }
                 return ("Focus Check: Focus successful");
             }

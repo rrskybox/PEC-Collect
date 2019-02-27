@@ -438,6 +438,7 @@ namespace PEC_Collect
             public int AutoGuiderOn()
             {
                 //Turn on Asynchronous, then turn on autoguide and return status
+                tsxc.Asynchronous = 0;
                 AutoGuiderOff();
                 tsxc.Asynchronous = 1;
                 return tsxc.Autoguide();
@@ -560,7 +561,18 @@ namespace PEC_Collect
 
         #endregion
 
+        public class Rotator
+        {
+            public static void Disconnect()
+            {
+                ccdsoftCamera tsxr = new ccdsoftCamera();
+                try { tsxr.Asynchronous = 0; }
+                catch (Exception ex) { MessageBox.Show( ex.Message); }
+                try { tsxr.rotatorDisconnect(); }
+                catch (Exception ex) { MessageBox.Show(ex.Message); }
+            }
     }
+   }
 }
 
 

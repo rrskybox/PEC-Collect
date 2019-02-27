@@ -2,6 +2,8 @@
 using TheSkyXLib;
 using System.Xml.Linq;
 using System;
+using System.IO;
+using System.Reflection;
 
 namespace PEC_Collect
 {
@@ -29,7 +31,6 @@ namespace PEC_Collect
             double gMag;
             double gHA;
 
-            StarSearchDBQPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\" + "Software Bisque\\TheSkyX Professional Edition\\Database Queries\\PEC_Collect.dbq";
 
             //Locate current position on star chart and set FOV to 2 degrees
             sky6StarChart tsxsc = new sky6StarChart();
@@ -78,9 +79,7 @@ namespace PEC_Collect
             }
             return;
         }
-
-
-
+               
         private static double ComputeDistance(double ra1, double dec1, double ra2, double dec2)
         //Computes the angular distance between two polar coordinates using TSX utility function
         //
@@ -91,5 +90,32 @@ namespace PEC_Collect
             return dist;
         }
 
+        /// <summary>
+        /// Creates the target guide star database query, if needed
+        /// </summary>
+        public static void InstallDBQ()
+        {
+            //Installs the dbq file in the proper destination folder if it is not installed already.
+            //
+            //  Generate the install path from the defaults.       
+            StarSearchDBQPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\" + "Software Bisque\\TheSkyX Professional Edition\\Database Queries\\PECCollect.dbq";
+            if (!File.Exists(StarSearchDBQPath))
+            {
+                Assembly dassembly = Assembly.GetExecutingAssembly();
+                //Collect the file contents to be written
+                Stream dstream = dassembly.GetManifestResourceStream("PEC_Collect.PECCollect.dbq");
+
+                int dlen = Convert.ToInt32(dstream.Length);
+                int doff = 0;
+                byte[] dbytes = new byte[dstream.Length];
+                int dreadout = dstream.Read(dbytes, doff, dlen);
+                FileStream dbqfile = File.Create(StarSearchDBQPath);
+                dbqfile.Close();
+                //write to destination file
+                File.WriteAllBytes(StarSearchDBQPath, dbytes);
+                dstream.Close();
+            }
+            return;
+        }
     }
 }
