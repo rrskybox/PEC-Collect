@@ -16,7 +16,7 @@ namespace PEC_Collect
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new FormPECDataCollection());
+            Application.Run(new FormPECCollect());
         }
     }
 }

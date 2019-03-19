@@ -125,7 +125,9 @@ namespace PEC_Collect
         public static void AutoGuideStart()
         {
             //Turns on autoguiding, assuming that everything has been initialized correctly
-            double autoguideExposureTime = GuideExposure;
+            //Disconnect the rotator, if any
+
+            TSXLink.Rotator.Disconnect();
 
             AstroImage asti = new AstroImage
             {

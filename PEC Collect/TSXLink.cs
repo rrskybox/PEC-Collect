@@ -178,7 +178,6 @@ namespace PEC_Collect
                     Autoguider = (int)asti.Camera,
                     BinX = asti.BinX,
                     BinY = asti.BinY,
-                    FilterIndexZeroBased = asti.Filter,
                     Delay = asti.Delay,
                     Frame = (ccdsoftImageFrame)asti.Frame,
                     ImageReduction = (ccdsoftImageReduction)asti.ImageReduction,
@@ -188,10 +187,9 @@ namespace PEC_Collect
                     SubframeRight = asti.SubframeRight,
                     SubframeLeft = asti.SubframeLeft,
                     AutoSaveOn = asti.AutoSave,
-                    ExposureTime = asti.Exposure
+                    ExposureTime = asti.Exposure,
+                    AutoguiderExposureTime = asti.Exposure
                 };
-                if (asti.Camera == AstroImage.CameraType.Guider)
-                { tsxc.AutoguiderExposureTime = asti.Exposure; }
             }
 
             public int GetImage()
@@ -561,18 +559,96 @@ namespace PEC_Collect
 
         #endregion
 
+        #region Rotator
         public class Rotator
         {
             public static void Disconnect()
             {
                 ccdsoftCamera tsxr = new ccdsoftCamera();
                 try { tsxr.Asynchronous = 0; }
-                catch (Exception ex) { MessageBox.Show( ex.Message); }
+                catch (Exception ex) { MessageBox.Show(ex.Message); }
                 try { tsxr.rotatorDisconnect(); }
                 catch (Exception ex) { MessageBox.Show(ex.Message); }
             }
+        }
+        #endregion
+
+        #region Image Linking
+        public static class ImageSolution
+        {
+            public static PlateSolution PlateSolve(string path)
+            {
+                ImageLink tsxl = new TheSkyXLib.ImageLink
+                {
+                    pathToFITS = path
+                };
+                try
+                { tsxl.execute(); }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message);
+                    return null;
+                }
+                ImageLinkResults tsxr = new ImageLinkResults();
+                ccdsoftCamera tcam = new ccdsoftCamera();
+                PlateSolution ipa = new PlateSolution
+                {
+                    ImageRA = tsxr.imageCenterRAJ2000,
+                    ImageDec = tsxr.imageCenterDecJ2000,
+                    ImagePA = tsxr.imagePositionAngle
+                };
+                return ipa;
+            }
+
+            private static bool IsDomeTrackingUnderway()
+            {
+                //Test to see if a dome tracking operation is underway.
+                // If so, doing a IsGotoComplete will throw an Error 212.
+                // return true
+                // otherwise return false
+                sky6Dome tsxd = new sky6Dome();
+                int testDomeTrack;
+                try { testDomeTrack = tsxd.IsGotoComplete; }
+                catch { return true; }
+                if (testDomeTrack == 0) return true;
+                else return false;
+            }
+
+            private static void ToggleDomeCoupling()
+            {
+                //Uncouple dome tracking, then recouple dome tracking (synchronously)
+                sky6Dome tsxd = new sky6Dome();
+                tsxd.IsCoupled = 0;
+                System.Threading.Thread.Sleep(1000);
+                tsxd.IsCoupled = 1;
+                //Wait for all dome activity to stop
+                while (IsDomeTrackingUnderway()) { System.Threading.Thread.Sleep(1000); }
+                return;
+            }
+        }
+        #endregion
+
+        #region Plate Solution Structure
+
+        public class PlateSolution
+        {
+            public PlateSolution()
+            {
+                ImageRA = 0;
+                ImageDec = 0;
+                ImagePA = 0;
+                RotatorPositionAngle = 0;
+            }
+
+            public double ImageRA { get; set; } = 0;
+            public double ImageDec { get; set; } = 0;
+            public double ImagePA { get; set; } = 0;
+            public double RotatorPositionAngle { get; set; } = 0;
+        }
+        #endregion
+
     }
-   }
 }
+
 
 

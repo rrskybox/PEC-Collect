@@ -118,10 +118,14 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="textBox1.Text" xml:space="preserve">
-    <value>Before starting
+    <value>This procedure uses the main camera to collect tracking logs.  Before starting:
    - Prepare for tracking log collection as described for main imaging camera in:
               https://www.bisque.com/sc/members/elmerjfudd/files/PEC-Data-Collection.pdf.aspx
-   - Make sure camera is ready to focus with appropriate filter selected
-   - Disconnect guider &amp; AO, if one</value>
+   - Turn off PEC
+   - Disconnect Autoguider
+   - Disable Camera Autoguide Relays
+   - Check Camera Autoguide Log Autoguiding and Clear Log
+   - Make sure camera is near focus with clear filter selected
+Camera orientation (near 0 deg) will be verified before starting data collection.</value>
   </data>
 </root>
