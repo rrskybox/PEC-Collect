@@ -64,7 +64,7 @@ namespace PEC_Collect
                 Exposure = 10,
                 ImageReduction = AstroImage.ReductionType.AutoDark
             };
-            if (!FastCheckBox.Checked)
+            if (PECCheckBox.Checked)
             {
                 TSXLink.Camera gCam = new TSXLink.Camera(asti) { AutoSaveOn = 1 };
                 int tstat = gCam.GetImage();
@@ -115,17 +115,26 @@ namespace PEC_Collect
                 ClosedLoopSlew tsxcls = new ClosedLoopSlew();
                 tsxcls.exec();
                 //check the focus using this star
-                if (!FastCheckBox.Checked)
+                // selected value = 0 for @focus2
+                // selected value = 1 for @focus3
+                // selected value = 2 for none
+                switch (FocusComboBox.SelectedIndex)
                 {
-                    AutoFocus.Check(AtFocus3Checkbox.Checked);
-                    //slew back assuming that @Focus2 may have moved to another target
-                    tsxsc.Find(StarList.TargetName);
-                    tsxcls.exec();
+                    case 0:
+                        AutoFocus.Check(false);
+                        break;
+                    case 1:
+                        AutoFocus.Check(true);
+                        break;
+                    case 2:
+                        break;
+                    default:
+                        break;
                 }
                 //Center up the target star as guide star
                 AutoGuide.SetAutoGuideStar();
                 //Optimize it's exposure level
-                AutoGuide.OptimizeExposure();
+                AutoGuide.GuideExposure = AutoGuide.OptimizeExposure();
                 //Start tracking
                 AutoGuide.AutoGuideStart();
 
@@ -212,8 +221,16 @@ namespace PEC_Collect
             //Fast is checked, so change loops to 1 and time to 5 minutes
             //   Used to run a single, no PlateSolve, no focus test
             //   this can be changed back if needed
-            LoopsCounter.Value = 1;
-            DurationMinutes.Value = 5;
+            if (PECCheckBox.Checked)
+            {
+                LoopsCounter.Value = 6;
+                DurationMinutes.Value = 20;
+            }
+            else
+            {
+                LoopsCounter.Value = 1;
+                DurationMinutes.Value = 5;
+            }
         }
     }
 }

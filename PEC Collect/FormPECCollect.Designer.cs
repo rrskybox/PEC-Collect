@@ -32,17 +32,18 @@
             this.StartButton = new System.Windows.Forms.Button();
             this.EndButton = new System.Windows.Forms.Button();
             this.textBox1 = new System.Windows.Forms.TextBox();
-            this.AtFocus3Checkbox = new System.Windows.Forms.CheckBox();
             this.LoopsCounter = new System.Windows.Forms.NumericUpDown();
             this.label1 = new System.Windows.Forms.Label();
             this.DurationMinutes = new System.Windows.Forms.NumericUpDown();
-            this.label2 = new System.Windows.Forms.Label();
             this.TimeLeft = new System.Windows.Forms.TextBox();
             this.label4 = new System.Windows.Forms.Label();
             this.CompletionTime = new System.Windows.Forms.TextBox();
             this.label3 = new System.Windows.Forms.Label();
-            this.FastCheckBox = new System.Windows.Forms.CheckBox();
+            this.PECCheckBox = new System.Windows.Forms.CheckBox();
             this.PauseCheckBox = new System.Windows.Forms.CheckBox();
+            this.FocusComboBox = new System.Windows.Forms.ComboBox();
+            this.label2 = new System.Windows.Forms.Label();
+            this.label5 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.LoopsCounter)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.DurationMinutes)).BeginInit();
             this.SuspendLayout();
@@ -77,17 +78,6 @@
             this.textBox1.Size = new System.Drawing.Size(526, 147);
             this.textBox1.TabIndex = 2;
             this.textBox1.Text = resources.GetString("textBox1.Text");
-            // 
-            // AtFocus3Checkbox
-            // 
-            this.AtFocus3Checkbox.AutoSize = true;
-            this.AtFocus3Checkbox.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
-            this.AtFocus3Checkbox.Location = new System.Drawing.Point(291, 12);
-            this.AtFocus3Checkbox.Name = "AtFocus3Checkbox";
-            this.AtFocus3Checkbox.Size = new System.Drawing.Size(94, 17);
-            this.AtFocus3Checkbox.TabIndex = 3;
-            this.AtFocus3Checkbox.Text = "Use @Focus3";
-            this.AtFocus3Checkbox.UseVisualStyleBackColor = true;
             // 
             // LoopsCounter
             // 
@@ -134,15 +124,6 @@
             0,
             0});
             // 
-            // label2
-            // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(162, 14);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(72, 13);
-            this.label2.TabIndex = 7;
-            this.label2.Text = "Duration (min)";
-            // 
             // TimeLeft
             // 
             this.TimeLeft.Location = new System.Drawing.Point(279, 192);
@@ -175,17 +156,19 @@
             this.label3.TabIndex = 12;
             this.label3.Text = "Completion Time";
             // 
-            // FastCheckBox
+            // PECCheckBox
             // 
-            this.FastCheckBox.AutoSize = true;
-            this.FastCheckBox.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
-            this.FastCheckBox.Location = new System.Drawing.Point(490, 12);
-            this.FastCheckBox.Name = "FastCheckBox";
-            this.FastCheckBox.Size = new System.Drawing.Size(46, 17);
-            this.FastCheckBox.TabIndex = 14;
-            this.FastCheckBox.Text = "Fast";
-            this.FastCheckBox.UseVisualStyleBackColor = true;
-            this.FastCheckBox.CheckedChanged += new System.EventHandler(this.FastCheckBox_CheckedChanged);
+            this.PECCheckBox.AutoSize = true;
+            this.PECCheckBox.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.PECCheckBox.Checked = true;
+            this.PECCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.PECCheckBox.Location = new System.Drawing.Point(490, 12);
+            this.PECCheckBox.Name = "PECCheckBox";
+            this.PECCheckBox.Size = new System.Drawing.Size(47, 17);
+            this.PECCheckBox.TabIndex = 14;
+            this.PECCheckBox.Text = "PEC";
+            this.PECCheckBox.UseVisualStyleBackColor = true;
+            this.PECCheckBox.CheckedChanged += new System.EventHandler(this.FastCheckBox_CheckedChanged);
             // 
             // PauseCheckBox
             // 
@@ -198,23 +181,54 @@
             this.PauseCheckBox.Text = "Pause";
             this.PauseCheckBox.UseVisualStyleBackColor = true;
             // 
+            // FocusComboBox
+            // 
+            this.FocusComboBox.FormattingEnabled = true;
+            this.FocusComboBox.Items.AddRange(new object[] {
+            "@Focus2",
+            "@Focus3",
+            "None"});
+            this.FocusComboBox.Location = new System.Drawing.Point(340, 10);
+            this.FocusComboBox.Name = "FocusComboBox";
+            this.FocusComboBox.Size = new System.Drawing.Size(82, 21);
+            this.FocusComboBox.TabIndex = 16;
+            // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(162, 14);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(72, 13);
+            this.label2.TabIndex = 17;
+            this.label2.Text = "Duration (min)";
+            // 
+            // label5
+            // 
+            this.label5.AutoSize = true;
+            this.label5.Location = new System.Drawing.Point(298, 14);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(36, 13);
+            this.label5.TabIndex = 18;
+            this.label5.Text = "Focus";
+            // 
             // FormPECCollect
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.HotTrack;
             this.ClientSize = new System.Drawing.Size(550, 219);
+            this.Controls.Add(this.label5);
+            this.Controls.Add(this.label2);
+            this.Controls.Add(this.FocusComboBox);
             this.Controls.Add(this.PauseCheckBox);
-            this.Controls.Add(this.FastCheckBox);
+            this.Controls.Add(this.PECCheckBox);
             this.Controls.Add(this.CompletionTime);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.TimeLeft);
             this.Controls.Add(this.label4);
-            this.Controls.Add(this.label2);
             this.Controls.Add(this.DurationMinutes);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.LoopsCounter);
-            this.Controls.Add(this.AtFocus3Checkbox);
             this.Controls.Add(this.textBox1);
             this.Controls.Add(this.EndButton);
             this.Controls.Add(this.StartButton);
@@ -233,17 +247,18 @@
         private System.Windows.Forms.Button StartButton;
         private System.Windows.Forms.Button EndButton;
         private System.Windows.Forms.TextBox textBox1;
-        private System.Windows.Forms.CheckBox AtFocus3Checkbox;
         private System.Windows.Forms.NumericUpDown LoopsCounter;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.NumericUpDown DurationMinutes;
-        private System.Windows.Forms.Label label2;
         private System.Windows.Forms.TextBox TimeLeft;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.TextBox CompletionTime;
         private System.Windows.Forms.Label label3;
-        private System.Windows.Forms.CheckBox FastCheckBox;
+        private System.Windows.Forms.CheckBox PECCheckBox;
         private System.Windows.Forms.CheckBox PauseCheckBox;
+        private System.Windows.Forms.ComboBox FocusComboBox;
+        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.Label label5;
     }
 }
 

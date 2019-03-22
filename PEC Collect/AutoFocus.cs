@@ -46,16 +46,16 @@ namespace PEC_Collect
             {
                 //Going to have to refocus.  
 
-                //Move to altitude away from meridian, if need be
-                sky6RASCOMTele tsxt = new sky6RASCOMTele();
-                tsxt.GetAzAlt();
-                double tAlt = tsxt.dAlt;
-                if (tAlt > 80)
-                {
-                    double tAz = tsxt.dAz;
-                    tAlt = 80.0;
-                    tsxt.SlewToAzAlt(tAz, tAlt, "AtFocus2ReadyPosition");
-                }
+                ////Move to altitude away from meridian, if need be
+                //sky6RASCOMTele tsxt = new sky6RASCOMTele();
+                //tsxt.GetAzAlt();
+                //double tAlt = tsxt.dAlt;
+                //if (tAlt > 80)
+                //{
+                //    double tAz = tsxt.dAz;
+                //    tAlt = 80.0;
+                //    tsxt.SlewToAzAlt(tAz, tAlt, "AtFocus2ReadyPosition");
+                //}
 
                 //reset last temp
                 afLastTemp = currentTemp;

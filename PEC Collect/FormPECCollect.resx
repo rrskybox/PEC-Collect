@@ -119,8 +119,9 @@
   </resheader>
   <data name="textBox1.Text" xml:space="preserve">
     <value>This procedure uses the main camera to collect tracking logs.  Before starting:
+   - Replace any AO driver with non-AO driver (e.g. SBIG AO -&gt; SBIG STX)
    - Prepare for tracking log collection as described for main imaging camera in:
-              https://www.bisque.com/sc/members/elmerjfudd/files/PEC-Data-Collection.pdf.aspx
+           The Paramount Robotic Telescope System User Guide (Page 144)  
    - Turn off PEC
    - Disconnect Autoguider
    - Disable Camera Autoguide Relays

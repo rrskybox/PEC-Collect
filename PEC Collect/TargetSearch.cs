@@ -35,17 +35,6 @@ namespace PEC_Collect
             double centerDec = tsxsc.Declination;
             tsxsc.FieldOfView = 3.0;
 
-            ///Create object information and datawizard objects
-            sky6DataWizard tsx_dw = new sky6DataWizard();
-            ///Set query path 
-            tsx_dw.Path = StarSearchDBQPath;
-            tsx_dw.Open();
-            string tst = tsx_dw.Path;
-
-            sky6ObjectInformation tsx_oi = tsx_dw.RunQuery;
-            //Check to see if we have something to look at,
-            //  if not, then use the last target name
-            if ((tsx_oi == null) || (tsx_oi.Count == 0)) return TargetName;
 
             //Look for closest member of list
             //Note the Hour Angle should always be greater than zero
@@ -56,6 +45,12 @@ namespace PEC_Collect
             double tSeparation;
             TargetRA = centerRA;
             TargetDec = centerDec;
+            sky6ObjectInformation tsx_oi = new sky6ObjectInformation();
+            do
+            {
+                tsx_oi = GetStars();
+                if (tsx_oi == null) System.Threading.Thread.Sleep(30000); //sleep for thirty seconds
+            } while (tsx_oi == null);
 
             for (int i = 0; i <= (tsx_oi.Count - 1); i++)
             {
@@ -80,7 +75,6 @@ namespace PEC_Collect
             }
             tsxsc.Find(TargetName);
             tsx_oi = null;
-            tsx_dw = null;
             return TargetName;
         }
 
@@ -120,6 +114,22 @@ namespace PEC_Collect
                 dstream.Close();
             }
             return;
+        }
+
+        public static sky6ObjectInformation GetStars()
+        {
+            //Runs the database query and checks results. objecty information false
+            //   else returns null
+            sky6DataWizard tsx_dw = new sky6DataWizard();
+            sky6ObjectInformation tsx_oi = new sky6ObjectInformation();
+            ///Set query path 
+            tsx_dw.Path = StarSearchDBQPath;
+            tsx_dw.Open();
+            string tst = tsx_dw.Path;
+            try { tsx_oi = tsx_dw.RunQuery; }
+            catch (Exception ex) { return null; }
+            if (tsx_oi.Count == 0) return null;
+            else return tsx_oi;
         }
     }
 }
