@@ -122,10 +122,10 @@
    - Replace any AO driver with non-AO driver (e.g. SBIG AO -&gt; SBIG STX)
    - Prepare for tracking log collection as described for main imaging camera in:
            The Paramount Robotic Telescope System User Guide (Page 144)  
-   - Turn off PEC
+   - Turn off PEC, if making tracking log for PEC curve.
    - Disconnect Autoguider
-   - Disable Camera Autoguide Relays
-   - Check Camera Autoguide Log Autoguiding and Clear Log
+   - Disable all Camera Autoguide Relays
+   - Check Camera Autoguide "Log Autoguiding" and "Clear Log"
    - Make sure camera is near focus with clear filter selected
 </value>
   </data>
