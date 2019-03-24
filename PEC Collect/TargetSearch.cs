@@ -49,10 +49,12 @@ namespace PEC_Collect
             do
             {
                 tsx_oi = GetStars();
+                try { int cnt = tsx_oi.Count; }
+                catch (Exception ex) { tsx_oi = null; }
                 if (tsx_oi == null) System.Threading.Thread.Sleep(30000); //sleep for thirty seconds
             } while (tsx_oi == null);
 
-            for (int i = 0; i <= (tsx_oi.Count - 1); i++)
+            for (int i = 0; i < tsx_oi.Count; i++)
             {
                 tsx_oi.Index = i;
                 tsx_oi.Property(Sk6ObjectInformationProperty.sk6ObjInfoProp_NAME1);

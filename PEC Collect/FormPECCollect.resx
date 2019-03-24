@@ -127,6 +127,6 @@
    - Disable Camera Autoguide Relays
    - Check Camera Autoguide Log Autoguiding and Clear Log
    - Make sure camera is near focus with clear filter selected
-Camera orientation (near 0 deg) will be verified before starting data collection.</value>
+</value>
   </data>
 </root>

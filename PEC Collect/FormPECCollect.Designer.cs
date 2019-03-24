@@ -39,7 +39,7 @@
             this.label4 = new System.Windows.Forms.Label();
             this.CompletionTime = new System.Windows.Forms.TextBox();
             this.label3 = new System.Windows.Forms.Label();
-            this.PECCheckBox = new System.Windows.Forms.CheckBox();
+            this.PACheckBox = new System.Windows.Forms.CheckBox();
             this.PauseCheckBox = new System.Windows.Forms.CheckBox();
             this.FocusComboBox = new System.Windows.Forms.ComboBox();
             this.label2 = new System.Windows.Forms.Label();
@@ -156,19 +156,18 @@
             this.label3.TabIndex = 12;
             this.label3.Text = "Completion Time";
             // 
-            // PECCheckBox
+            // PACheckBox
             // 
-            this.PECCheckBox.AutoSize = true;
-            this.PECCheckBox.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
-            this.PECCheckBox.Checked = true;
-            this.PECCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.PECCheckBox.Location = new System.Drawing.Point(490, 12);
-            this.PECCheckBox.Name = "PECCheckBox";
-            this.PECCheckBox.Size = new System.Drawing.Size(47, 17);
-            this.PECCheckBox.TabIndex = 14;
-            this.PECCheckBox.Text = "PEC";
-            this.PECCheckBox.UseVisualStyleBackColor = true;
-            this.PECCheckBox.CheckedChanged += new System.EventHandler(this.FastCheckBox_CheckedChanged);
+            this.PACheckBox.AutoSize = true;
+            this.PACheckBox.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.PACheckBox.Checked = true;
+            this.PACheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.PACheckBox.Location = new System.Drawing.Point(490, 12);
+            this.PACheckBox.Name = "PACheckBox";
+            this.PACheckBox.Size = new System.Drawing.Size(40, 17);
+            this.PACheckBox.TabIndex = 14;
+            this.PACheckBox.Text = "PA";
+            this.PACheckBox.UseVisualStyleBackColor = true;
             // 
             // PauseCheckBox
             // 
@@ -221,7 +220,7 @@
             this.Controls.Add(this.label2);
             this.Controls.Add(this.FocusComboBox);
             this.Controls.Add(this.PauseCheckBox);
-            this.Controls.Add(this.PECCheckBox);
+            this.Controls.Add(this.PACheckBox);
             this.Controls.Add(this.CompletionTime);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.TimeLeft);
@@ -254,7 +253,7 @@
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.TextBox CompletionTime;
         private System.Windows.Forms.Label label3;
-        private System.Windows.Forms.CheckBox PECCheckBox;
+        private System.Windows.Forms.CheckBox PACheckBox;
         private System.Windows.Forms.CheckBox PauseCheckBox;
         private System.Windows.Forms.ComboBox FocusComboBox;
         private System.Windows.Forms.Label label2;

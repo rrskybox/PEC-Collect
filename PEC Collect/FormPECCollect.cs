@@ -64,7 +64,7 @@ namespace PEC_Collect
                 Exposure = 10,
                 ImageReduction = AstroImage.ReductionType.AutoDark
             };
-            if (PECCheckBox.Checked)
+            if (PACheckBox.Checked)
             {
                 TSXLink.Camera gCam = new TSXLink.Camera(asti) { AutoSaveOn = 1 };
                 int tstat = gCam.GetImage();
@@ -216,21 +216,5 @@ namespace PEC_Collect
             AutoGuide.AutoGuideStop();
         }
 
-        private void FastCheckBox_CheckedChanged(object sender, EventArgs e)
-        {
-            //Fast is checked, so change loops to 1 and time to 5 minutes
-            //   Used to run a single, no PlateSolve, no focus test
-            //   this can be changed back if needed
-            if (PECCheckBox.Checked)
-            {
-                LoopsCounter.Value = 6;
-                DurationMinutes.Value = 20;
-            }
-            else
-            {
-                LoopsCounter.Value = 1;
-                DurationMinutes.Value = 5;
-            }
-        }
-    }
+     }
 }
