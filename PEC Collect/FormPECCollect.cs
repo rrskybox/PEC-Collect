@@ -8,8 +8,9 @@
 /// Copyright: Rick McAlister, 2019
 /// 
 /// Version Information
-/// V1.0 -- TBD
-///     1. Release on Software Bisque support forum
+/// V1.0 -- Basic features
+///     V1.1 Release on Software Bisque support forum
+///     V1.2 Added image mirroring detect and output
 
 
 using System;
@@ -83,6 +84,9 @@ namespace PEC_Collect
                         if (dr == DialogResult.No) return;
                     }
                 }
+                //Add info to text output:
+                if (psln.ImageIsMirrored) OutputTextBox.Text += "\n\r\n\r" + "  --> Plate Solved PA = " + ((int)psln.ImagePA).ToString() + " degrees and image is mirrored (do not check West on PEC)";
+                else OutputTextBox.Text += "\n\r\n\r" + "  -->Plate Solved PA = " + ((int)psln.ImagePA).ToString() + " degrees and image is not mirrored (check West on PEC).";
             }
             //Passed the orientation test, west side
 
@@ -216,5 +220,5 @@ namespace PEC_Collect
             AutoGuide.AutoGuideStop();
         }
 
-     }
+    }
 }

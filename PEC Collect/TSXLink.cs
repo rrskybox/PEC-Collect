@@ -595,7 +595,8 @@ namespace PEC_Collect
                 {
                     ImageRA = tsxr.imageCenterRAJ2000,
                     ImageDec = tsxr.imageCenterDecJ2000,
-                    ImagePA = tsxr.imagePositionAngle
+                    ImagePA = tsxr.imagePositionAngle,
+                    ImageIsMirrored = Convert.ToBoolean( tsxr.imageIsMirrored)
                 };
                 return ipa;
             }
@@ -638,12 +639,14 @@ namespace PEC_Collect
                 ImageDec = 0;
                 ImagePA = 0;
                 RotatorPositionAngle = 0;
+                ImageIsMirrored = false;
             }
 
             public double ImageRA { get; set; } = 0;
             public double ImageDec { get; set; } = 0;
             public double ImagePA { get; set; } = 0;
             public double RotatorPositionAngle { get; set; } = 0;
+            public bool ImageIsMirrored { get; set; } = false;
         }
         #endregion
 

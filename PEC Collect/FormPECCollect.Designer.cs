@@ -31,7 +31,7 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormPECCollect));
             this.StartButton = new System.Windows.Forms.Button();
             this.EndButton = new System.Windows.Forms.Button();
-            this.textBox1 = new System.Windows.Forms.TextBox();
+            this.OutputTextBox = new System.Windows.Forms.TextBox();
             this.LoopsCounter = new System.Windows.Forms.NumericUpDown();
             this.label1 = new System.Windows.Forms.Label();
             this.DurationMinutes = new System.Windows.Forms.NumericUpDown();
@@ -70,14 +70,14 @@
             this.EndButton.UseVisualStyleBackColor = true;
             this.EndButton.Click += new System.EventHandler(this.EndButton_Click);
             // 
-            // textBox1
+            // OutputTextBox
             // 
-            this.textBox1.Location = new System.Drawing.Point(10, 36);
-            this.textBox1.Multiline = true;
-            this.textBox1.Name = "textBox1";
-            this.textBox1.Size = new System.Drawing.Size(526, 147);
-            this.textBox1.TabIndex = 2;
-            this.textBox1.Text = resources.GetString("textBox1.Text");
+            this.OutputTextBox.Location = new System.Drawing.Point(10, 36);
+            this.OutputTextBox.Multiline = true;
+            this.OutputTextBox.Name = "OutputTextBox";
+            this.OutputTextBox.Size = new System.Drawing.Size(526, 147);
+            this.OutputTextBox.TabIndex = 2;
+            this.OutputTextBox.Text = resources.GetString("OutputTextBox.Text");
             // 
             // LoopsCounter
             // 
@@ -228,7 +228,7 @@
             this.Controls.Add(this.DurationMinutes);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.LoopsCounter);
-            this.Controls.Add(this.textBox1);
+            this.Controls.Add(this.OutputTextBox);
             this.Controls.Add(this.EndButton);
             this.Controls.Add(this.StartButton);
             this.ForeColor = System.Drawing.SystemColors.ControlLightLight;
@@ -245,7 +245,7 @@
 
         private System.Windows.Forms.Button StartButton;
         private System.Windows.Forms.Button EndButton;
-        private System.Windows.Forms.TextBox textBox1;
+        private System.Windows.Forms.TextBox OutputTextBox;
         private System.Windows.Forms.NumericUpDown LoopsCounter;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.NumericUpDown DurationMinutes;

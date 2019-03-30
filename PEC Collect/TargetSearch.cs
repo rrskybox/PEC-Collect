@@ -50,7 +50,9 @@ namespace PEC_Collect
             {
                 tsx_oi = GetStars();
                 try { int cnt = tsx_oi.Count; }
+#pragma warning disable CS0168 // The variable 'ex' is declared but never used
                 catch (Exception ex) { tsx_oi = null; }
+#pragma warning restore CS0168 // The variable 'ex' is declared but never used
                 if (tsx_oi == null) System.Threading.Thread.Sleep(30000); //sleep for thirty seconds
             } while (tsx_oi == null);
 
@@ -129,7 +131,9 @@ namespace PEC_Collect
             tsx_dw.Open();
             string tst = tsx_dw.Path;
             try { tsx_oi = tsx_dw.RunQuery; }
+#pragma warning disable CS0168 // The variable 'ex' is declared but never used
             catch (Exception ex) { return null; }
+#pragma warning restore CS0168 // The variable 'ex' is declared but never used
             if (tsx_oi.Count == 0) return null;
             else return tsx_oi;
         }

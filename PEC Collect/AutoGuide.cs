@@ -105,7 +105,9 @@ namespace PEC_Collect
             {
                 maxStarADU = sEx.GetPixelADU((int)CenterX[iMax], (int)CenterY[iMax]);
             }
+#pragma warning disable CS0168 // The variable 'ex' is declared but never used
             catch (Exception ex)
+#pragma warning restore CS0168 // The variable 'ex' is declared but never used
             {
             }
             if (maxStarADU == 0)
@@ -214,7 +216,9 @@ namespace PEC_Collect
             {
                 int sStat = tsex.SourceExtractGuider();
             }
+#pragma warning disable CS0168 // The variable 'ex' is declared but never used
             catch (Exception ex)
+#pragma warning restore CS0168 // The variable 'ex' is declared but never used
             {
                 // Just close up, TSX will spawn error window
                 tsex.Close();

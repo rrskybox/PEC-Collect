@@ -117,7 +117,7 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="textBox1.Text" xml:space="preserve">
+  <data name="OutputTextBox.Text" xml:space="preserve">
     <value>This procedure uses the main camera to collect tracking logs.  Before starting:
    - Replace any AO driver with non-AO driver (e.g. SBIG AO -&gt; SBIG STX)
    - Prepare for tracking log collection as described for main imaging camera in:
