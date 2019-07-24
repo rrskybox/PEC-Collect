@@ -44,6 +44,8 @@
             this.FocusComboBox = new System.Windows.Forms.ComboBox();
             this.label2 = new System.Windows.Forms.Label();
             this.label5 = new System.Windows.Forms.Label();
+            this.BinningListBox = new System.Windows.Forms.ListBox();
+            this.label6 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.LoopsCounter)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.DurationMinutes)).BeginInit();
             this.SuspendLayout();
@@ -51,9 +53,9 @@
             // StartButton
             // 
             this.StartButton.ForeColor = System.Drawing.Color.Black;
-            this.StartButton.Location = new System.Drawing.Point(415, 189);
+            this.StartButton.Location = new System.Drawing.Point(532, 189);
             this.StartButton.Name = "StartButton";
-            this.StartButton.Size = new System.Drawing.Size(57, 23);
+            this.StartButton.Size = new System.Drawing.Size(57, 20);
             this.StartButton.TabIndex = 0;
             this.StartButton.Text = "Start";
             this.StartButton.UseVisualStyleBackColor = true;
@@ -62,9 +64,9 @@
             // EndButton
             // 
             this.EndButton.ForeColor = System.Drawing.Color.Black;
-            this.EndButton.Location = new System.Drawing.Point(478, 189);
+            this.EndButton.Location = new System.Drawing.Point(595, 189);
             this.EndButton.Name = "EndButton";
-            this.EndButton.Size = new System.Drawing.Size(58, 23);
+            this.EndButton.Size = new System.Drawing.Size(58, 20);
             this.EndButton.TabIndex = 1;
             this.EndButton.Text = "End";
             this.EndButton.UseVisualStyleBackColor = true;
@@ -72,10 +74,10 @@
             // 
             // OutputTextBox
             // 
-            this.OutputTextBox.Location = new System.Drawing.Point(10, 36);
+            this.OutputTextBox.Location = new System.Drawing.Point(12, 34);
             this.OutputTextBox.Multiline = true;
             this.OutputTextBox.Name = "OutputTextBox";
-            this.OutputTextBox.Size = new System.Drawing.Size(526, 147);
+            this.OutputTextBox.Size = new System.Drawing.Size(641, 147);
             this.OutputTextBox.TabIndex = 2;
             this.OutputTextBox.Text = resources.GetString("OutputTextBox.Text");
             // 
@@ -173,7 +175,7 @@
             // 
             this.PauseCheckBox.AutoSize = true;
             this.PauseCheckBox.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
-            this.PauseCheckBox.Location = new System.Drawing.Point(428, 12);
+            this.PauseCheckBox.Location = new System.Drawing.Point(424, 11);
             this.PauseCheckBox.Name = "PauseCheckBox";
             this.PauseCheckBox.Size = new System.Drawing.Size(56, 17);
             this.PauseCheckBox.TabIndex = 15;
@@ -187,7 +189,7 @@
             "@Focus2",
             "@Focus3",
             "None"});
-            this.FocusComboBox.Location = new System.Drawing.Point(340, 10);
+            this.FocusComboBox.Location = new System.Drawing.Point(336, 9);
             this.FocusComboBox.Name = "FocusComboBox";
             this.FocusComboBox.Size = new System.Drawing.Size(82, 21);
             this.FocusComboBox.TabIndex = 16;
@@ -204,18 +206,44 @@
             // label5
             // 
             this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(298, 14);
+            this.label5.Location = new System.Drawing.Point(294, 13);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(36, 13);
             this.label5.TabIndex = 18;
             this.label5.Text = "Focus";
+            // 
+            // BinningListBox
+            // 
+            this.BinningListBox.FormattingEnabled = true;
+            this.BinningListBox.Items.AddRange(new object[] {
+            "1x1",
+            "2x2",
+            "3x3",
+            "4x4"});
+            this.BinningListBox.Location = new System.Drawing.Point(607, 12);
+            this.BinningListBox.Name = "BinningListBox";
+            this.BinningListBox.ScrollAlwaysVisible = true;
+            this.BinningListBox.Size = new System.Drawing.Size(46, 17);
+            this.BinningListBox.TabIndex = 19;
+            this.BinningListBox.SelectedIndexChanged += new System.EventHandler(this.BinningListBox_SelectedIndexChanged);
+            // 
+            // label6
+            // 
+            this.label6.AutoSize = true;
+            this.label6.Location = new System.Drawing.Point(559, 14);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(42, 13);
+            this.label6.TabIndex = 20;
+            this.label6.Text = "Binning";
             // 
             // FormPECCollect
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.HotTrack;
-            this.ClientSize = new System.Drawing.Size(550, 219);
+            this.ClientSize = new System.Drawing.Size(665, 219);
+            this.Controls.Add(this.label6);
+            this.Controls.Add(this.BinningListBox);
             this.Controls.Add(this.label5);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.FocusComboBox);
@@ -258,6 +286,8 @@
         private System.Windows.Forms.ComboBox FocusComboBox;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label label5;
+        private System.Windows.Forms.ListBox BinningListBox;
+        private System.Windows.Forms.Label label6;
     }
 }
 

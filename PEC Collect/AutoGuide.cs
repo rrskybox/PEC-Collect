@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using TheSkyXLib;
+using System.Windows.Forms;
 
 namespace PEC_Collect
 {
@@ -8,18 +9,20 @@ namespace PEC_Collect
     {
         public static double GuideStarX { get; set; }
         public static double GuideStarY { get; set; }
-        public static double GuideExposure { get; set; } = 0.5;
-        public static int GuiderXBinning { get; set; } = 2;
-        public static int GuiderYBinning { get; set; } = 2;
-        public static double GuideStarADU { get; set; } = 16000;
-        public static double MaximumGuiderExposure { get; set; } = 2.0;
-        public static double MinimumGuiderExposure { get; set; } = 0.1;
+        public static double GuideExposure { get; set; } = 0.5;             //Default initial exposure is 0.5 seconds
+        public static int GuiderXBinning { get; set; } = 2;                 //Default binning is 2x2
+        public static int GuiderYBinning { get; set; } = 2;  
+        public static double GuideStarADU { get; set; } = 16000;            //Default target ADU is 16000
+        public static double MaximumGuiderExposure { get; set; } = 4.0;     //Default maximum exposure time is 4 seconds
+        public static double MinimumGuiderExposure { get; set; } = 0.1;     //Default minimum exposure time is 0.1seconds
 
 
-        //MaxPixel-based method for getting the ADU of a guide star
+        //MaxPixel-based method for getting the ADU in a trackbox-sized subframed image (NOte: could be hot pixel)
         public static double GuideStarMaxPixel(double exposure)
         {
-            //Take a subframe image on the guider, assuming it has been already set
+            //Take a subframe image on the guider that is centered on a previously centered star
+            //  and get the maximum pixel ADU 
+            //The procedure assumes no hot pixels
 
             AstroImage asti = new AstroImage
             {
@@ -53,7 +56,7 @@ namespace PEC_Collect
             return maxPixel;
         }
 
-        //SexTractor-based method for getting the ADU of a guide star
+        //SexTractor-based method for getting the ADU of the star at the center of a trackbox subframe
         public static double GuideStarSextractor(double exposure)
         {
             //Determines the ADU for the X/Y centroid of the maximum FWHM star in a subframe
@@ -65,8 +68,8 @@ namespace PEC_Collect
                 Camera = AstroImage.CameraType.Imaging,
                 SubFrame = 1,
                 Frame = AstroImage.ImageType.Light,
-                BinX = 2,
-                BinY = 2,
+                BinX = GuiderXBinning,
+                BinY = GuiderYBinning,
                 Delay = 0,
                 Exposure = exposure,
                 ImageReduction = AstroImage.ReductionType.AutoDark
@@ -93,23 +96,29 @@ namespace PEC_Collect
 
             //Next step is to generate the collection of stars in the subframe
             TSXLink.SexTractor sEx = new TSXLink.SexTractor();
-            int xStat = sEx.SourceExtractGuider();
+            bool xStat = sEx.SourceExtractGuider();
 
             List<double> FWHMlist = sEx.GetSourceExtractionList(TSXLink.SexTractor.SourceExtractionType.sexFWHM);
             List<double> CenterX = sEx.GetSourceExtractionList(TSXLink.SexTractor.SourceExtractionType.sexX);
             List<double> CenterY = sEx.GetSourceExtractionList(TSXLink.SexTractor.SourceExtractionType.sexY);
+
+            //Find the star with the greatest FWHM
             int iMax = sEx.GetListLargest(FWHMlist);
+
+            //Determine the ADU value at the center of this listed star.
+            //  if it is zero, then look for the maximum pixel ADU
 
             double maxStarADU = 0;
             try
             {
                 maxStarADU = sEx.GetPixelADU((int)CenterX[iMax], (int)CenterY[iMax]);
             }
-#pragma warning disable CS0168 // The variable 'ex' is declared but never used
             catch (Exception ex)
-#pragma warning restore CS0168 // The variable 'ex' is declared but never used
             {
+                MessageBox.Show(ex.Message);
+                maxStarADU = 0; ;
             }
+
             if (maxStarADU == 0)
             { maxStarADU = gCam.MaximumPixel; }
             return maxStarADU;
@@ -124,7 +133,7 @@ namespace PEC_Collect
         }
 
         //Fires up the autoguider including picking a star and optimizing the exposure time
-        public static void AutoGuideStart()
+        public static bool AutoGuideStart()
         {
             //Turns on autoguiding, assuming that everything has been initialized correctly
             //Disconnect the rotator, if any
@@ -146,17 +155,19 @@ namespace PEC_Collect
             TSXLink.Camera gCam = new TSXLink.Camera(asti) { AutoSaveOn = 0 };
             //guide star and exposure should have already been run
             //turn on guiding
-            int agstat = gCam.AutoGuiderOn();
+            bool agStat = gCam.AutoGuiderOn();
+            return agStat;
         }
 
         //Aborts autoguiding, if running
-        public static void AutoGuideStop()
+        public static bool AutoGuideStop()
         {
             //Halt Autoguiding
             //Open default image so we can turn the guider off then open guider and turn it off
             AstroImage asti = new AstroImage() { Camera = AstroImage.CameraType.Imaging };
             TSXLink.Camera gCam = new TSXLink.Camera(asti);
             gCam.AutoGuiderOff();
+            return true;
         }
 
         //*** SetAutoGuideStar picks a guide star and places a subframe around it
@@ -214,14 +225,12 @@ namespace PEC_Collect
 
             try
             {
-                int sStat = tsex.SourceExtractGuider();
+               bool sStat = tsex.SourceExtractGuider();
             }
-#pragma warning disable CS0168 // The variable 'ex' is declared but never used
             catch (Exception ex)
-#pragma warning restore CS0168 // The variable 'ex' is declared but never used
             {
                 // Just close up, TSX will spawn error window
-                tsex.Close();
+                MessageBox.Show("Star Extracdtion Error: " + ex.Message);
                 return false;
             }
 
@@ -468,6 +477,7 @@ namespace PEC_Collect
             { return minLimit; }
             return inVal;
         }
+
         public static bool CloseEnough(double testval, double targetval, double percentnear)
         {
             //Cute little method for determining if a value is withing a certain percentatge of

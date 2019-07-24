@@ -4,6 +4,7 @@ using System.Xml.Linq;
 using System;
 using System.IO;
 using System.Reflection;
+using System.Windows.Forms;
 
 namespace PEC_Collect
 {
@@ -48,12 +49,12 @@ namespace PEC_Collect
             sky6ObjectInformation tsx_oi = new sky6ObjectInformation();
             do
             {
-                tsx_oi = GetStars();
-                try { int cnt = tsx_oi.Count; }
-#pragma warning disable CS0168 // The variable 'ex' is declared but never used
-                catch (Exception ex) { tsx_oi = null; }
-#pragma warning restore CS0168 // The variable 'ex' is declared but never used
-                if (tsx_oi == null) System.Threading.Thread.Sleep(30000); //sleep for thirty seconds
+                tsx_oi = GetStars(); // will return null if null tsx_oi (including exception thrown) or count = 0;
+                if (tsx_oi == null)
+                {
+                    MessageBox.Show("Waiting half a minute for a better target star");
+                    System.Threading.Thread.Sleep(30000); //sleep for thirty seconds then try again
+                }
             } while (tsx_oi == null);
 
             for (int i = 0; i < tsx_oi.Count; i++)
@@ -131,9 +132,11 @@ namespace PEC_Collect
             tsx_dw.Open();
             string tst = tsx_dw.Path;
             try { tsx_oi = tsx_dw.RunQuery; }
-#pragma warning disable CS0168 // The variable 'ex' is declared but never used
-            catch (Exception ex) { return null; }
-#pragma warning restore CS0168 // The variable 'ex' is declared but never used
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+                return null;
+            }
             if (tsx_oi.Count == 0) return null;
             else return tsx_oi;
         }

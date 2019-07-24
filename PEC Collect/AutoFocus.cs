@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TheSkyXLib;
+using System.Windows.Forms;
 
 namespace PEC_Collect
 {

@@ -41,11 +41,20 @@ namespace PEC_Collect
                 return;
             }
 
-            public int SourceExtractGuider()
+            public bool SourceExtractGuider()
             {
-                int aStat = timg.AttachToActiveImager();
-                int iStat = timg.ShowInventory();
-                return iStat;
+                int iStat, aStat;
+                try
+                {
+                    aStat = timg.AttachToActiveImager();
+                    iStat = timg.ShowInventory();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message);
+                    return false;
+                }
+                return true;
             }
 
             //*** Converts an array of generic "objects" to an array of doubles
@@ -88,8 +97,9 @@ namespace PEC_Collect
                 int aHeight = timg.HeightInPixels;
                 int aWidth = timg.WidthInPixels;
                 //need to some out of bounds checking here someday
-                double[] aRow = timg.scanLine(yPix);
-                double aVal = aRow[xPix];
+                //var aRow = timg.scanLine(yPix);
+                //double aVal = aRow[xPix];
+                double aVal = (double) timg.scanLine(yPix)[xPix];
                 return aVal;
             }
 
@@ -202,7 +212,10 @@ namespace PEC_Collect
                 try
                 { tsxc.TakeImage(); }
                 catch (Exception ex)
-                { return ex.HResult; }
+                {
+                    MessageBox.Show(ex.Message);
+                    return ex.HResult;
+                }
 
                 //Wait while the image is being taken, using 1 second naps.  Check each time to see
                 //  if (the user has hit abort.  if (so, close everything up.
@@ -215,6 +228,7 @@ namespace PEC_Collect
                     { expstatus = tsxc.IsExposureComplete; }
                     catch (Exception ex)
                     {
+                        MessageBox.Show(ex.Message);
                         return ex.HResult;
                     }
                 }
@@ -433,13 +447,15 @@ namespace PEC_Collect
                 }
             }
 
-            public int AutoGuiderOn()
+            public bool AutoGuiderOn()
             {
                 //Turn on Asynchronous, then turn on autoguide and return status
                 tsxc.Asynchronous = 0;
                 AutoGuiderOff();
                 tsxc.Asynchronous = 1;
-                return tsxc.Autoguide();
+                int tsxStat = tsxc.Autoguide();
+                if (tsxStat != 0) return false;
+                else return true;
             }
 
             public void AutoGuiderOff()
@@ -596,7 +612,7 @@ namespace PEC_Collect
                     ImageRA = tsxr.imageCenterRAJ2000,
                     ImageDec = tsxr.imageCenterDecJ2000,
                     ImagePA = tsxr.imagePositionAngle,
-                    ImageIsMirrored = Convert.ToBoolean( tsxr.imageIsMirrored)
+                    ImageIsMirrored = Convert.ToBoolean(tsxr.imageIsMirrored)
                 };
                 return ipa;
             }

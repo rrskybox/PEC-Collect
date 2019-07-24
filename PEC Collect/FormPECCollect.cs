@@ -30,9 +30,13 @@ namespace PEC_Collect
             catch { this.Text = " in Debug"; } //probably in debug, no version info available
             this.Text = "PEC Collect V" + this.Text;
             StarList.InstallDBQ();
+            BinningListBox.SelectedIndex = 1;
+            FocusComboBox.SelectedIndex = 2;
         }
 
         public bool abortFlag = false;
+
+        public int Binning { get; set; } = 2;
 
         private void StartButton_Click(object sender, EventArgs e)
         {
@@ -50,6 +54,9 @@ namespace PEC_Collect
             //      Abort
             //Loop
 
+            //Set Binning
+            AutoGuide.GuiderXBinning = Binning;
+            AutoGuide.GuiderYBinning = Binning;
 
             //Check orientation
             //slew to west side near meridian at 0 deg declination
@@ -63,7 +70,9 @@ namespace PEC_Collect
                 Frame = AstroImage.ImageType.Light,
                 Delay = 0,
                 Exposure = 10,
-                ImageReduction = AstroImage.ReductionType.AutoDark
+                ImageReduction = AstroImage.ReductionType.AutoDark,
+                BinX = Binning,
+                BinY = Binning
             };
             if (PACheckBox.Checked)
             {
@@ -140,7 +149,7 @@ namespace PEC_Collect
                 //Optimize it's exposure level
                 AutoGuide.GuideExposure = AutoGuide.OptimizeExposure();
                 //Start tracking
-                AutoGuide.AutoGuideStart();
+                bool gsStatus = AutoGuide.AutoGuideStart();
 
                 //Wait for the duration, checking for abort (e.g. End)
                 int durationSecs = (60 * (int)DurationMinutes.Value);
@@ -220,5 +229,11 @@ namespace PEC_Collect
             AutoGuide.AutoGuideStop();
         }
 
+        private void BinningListBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            //Sets binning
+            Binning = BinningListBox.SelectedIndex+1;
+            return;
+        }
     }
 }
