@@ -30,7 +30,7 @@ namespace PEC_Collect
             catch { this.Text = " in Debug"; } //probably in debug, no version info available
             this.Text = "PEC Collect V" + this.Text;
             StarList.InstallDBQ();
-            BinningListBox.SelectedIndex = 1;
+            BinningListBox.SelectedIndex = 0;
             FocusComboBox.SelectedIndex = 2;
         }
 
