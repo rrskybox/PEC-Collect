@@ -49,15 +49,31 @@ namespace PEC_Collect
             sky6ObjectInformation tsx_oi = new sky6ObjectInformation();
             do
             {
-                tsx_oi = GetStars(); // will return null if null tsx_oi (including exception thrown) or count = 0;
+                //tsx_oi = GetStars(); // will return null if null tsx_oi (including exception thrown) or count = 0;
+                //Runs the database query and checks results. objecty information false
+                //   else returns null
+                sky6DataWizard tsx_dw = new sky6DataWizard();
+                ///Set query path 
+                tsx_dw.Path = StarSearchDBQPath;
+                tsx_dw.Open();
+                string tst = tsx_dw.Path;
+                try { tsx_oi = tsx_dw.RunQuery; }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message);
+                    return null;
+                }
+                if (tsx_oi.Count == 0) return null;
+                //
+                //
                 if (tsx_oi == null)
                 {
                     MessageBox.Show("Waiting half a minute for a better target star");
                     System.Threading.Thread.Sleep(30000); //sleep for thirty seconds then try again
                 }
             } while (tsx_oi == null);
-
-            for (int i = 0; i < tsx_oi.Count; i++)
+            int oiCount = tsx_oi.Count;
+            for (int i = 0; i < oiCount; i++)
             {
                 tsx_oi.Index = i;
                 tsx_oi.Property(Sk6ObjectInformationProperty.sk6ObjInfoProp_NAME1);
@@ -79,7 +95,6 @@ namespace PEC_Collect
                 }
             }
             tsxsc.Find(TargetName);
-            tsx_oi = null;
             return TargetName;
         }
 

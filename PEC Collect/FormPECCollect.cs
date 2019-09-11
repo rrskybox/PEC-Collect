@@ -36,10 +36,13 @@ namespace PEC_Collect
 
         public bool abortFlag = false;
 
-        public int Binning { get; set; } = 2;
+        public int Binning { get; set; } = 1;  // 1=1x1, 2=2x2, 3=3x3
 
         private void StartButton_Click(object sender, EventArgs e)
         {
+
+
+
             //Initialize stuff
             //Verify camera orientation near 0 degrees
 
@@ -61,7 +64,7 @@ namespace PEC_Collect
             //Check orientation
             //slew to west side near meridian at 0 deg declination
             double altAtZeroDec = 90 - GetLocationLatitude();
-            SlewAzAlt(183, altAtZeroDec);
+            TSXLink.ReliableAzAltSlew(183, altAtZeroDec,"");
 
             //  Take image, image link it and get Position Angle
             AstroImage asti = new AstroImage
@@ -94,8 +97,8 @@ namespace PEC_Collect
                     }
                 }
                 //Add info to text output:
-                if (psln.ImageIsMirrored) OutputTextBox.Text += "\n\r\n\r" + "  --> Plate Solved PA = " + ((int)psln.ImagePA).ToString() + " degrees and image is mirrored (do not check West on PEC)";
-                else OutputTextBox.Text += "\n\r\n\r" + "  -->Plate Solved PA = " + ((int)psln.ImagePA).ToString() + " degrees and image is not mirrored (check West on PEC).";
+                if (psln.ImageIsMirrored) OutputTextBox.Text += "\n\r\n\r" + "  --> Plate Solved PA = " + ((int)psln.ImagePA).ToString() + " degrees and image is mirrored (check West in TCS).";
+                else OutputTextBox.Text += "\n\r\n\r" + "  -->Plate Solved PA = " + ((int)psln.ImagePA).ToString() + " degrees and image is not mirrored (do not check West in TCS).";
             }
             //Passed the orientation test, west side
 
@@ -115,18 +118,20 @@ namespace PEC_Collect
                     Delay = 0,
                     Exposure = 10,
                     SubFrame = 0,
-                    ImageReduction = AstroImage.ReductionType.AutoDark
+                    ImageReduction = AstroImage.ReductionType.AutoDark,
+                    BinX = Binning,
+                    BinY = Binning
                 };
                 TSXLink.Camera ngCam = new TSXLink.Camera(asti) { AutoSaveOn = 1 };
 
                 //Slew to just west of the meridian at 0 deg Declination
                 sky6StarChart tsxsc = new sky6StarChart();
-                SlewAzAlt(183, altAtZeroDec);
+                TSXLink.ReliableAzAltSlew(183, altAtZeroDec,"");
                 //find a target star here
                 StarList.TargetStarSearch();
                 //slew to and center on the found star
-                ClosedLoopSlew tsxcls = new ClosedLoopSlew();
-                tsxcls.exec();
+                int cls1 = TSXLink.ReliableClosedLoopSlew(StarList.TargetRA,StarList.TargetDec,StarList.TargetName);
+                if (cls1 != 0) return;
                 //check the focus using this star
                 // selected value = 0 for @focus2
                 // selected value = 1 for @focus3
@@ -144,6 +149,8 @@ namespace PEC_Collect
                     default:
                         break;
                 }
+                AutoGuide.GuiderXBinning = Binning;
+                AutoGuide.GuiderYBinning = Binning;
                 //Center up the target star as guide star
                 AutoGuide.SetAutoGuideStar();
                 //Optimize it's exposure level
@@ -169,40 +176,28 @@ namespace PEC_Collect
                 {
                     MessageBox.Show("Pausing for configuration changes, if any.");
                 }
+
+                /////////////************************///////////////
+                //Binning sensitivity experiment -- remove aftwr completed
+                //Check to see if BinSwap is enabled
+                //  if so, then if binning is 1x1, change to 2x2 and vis versa
+                if (BinSwapCheckbox.Checked)
+                {
+                    if (Binning == 1)
+                    {
+                        BinningListBox.SelectedIndex = 1;
+                        Binning = 2;
+                    }
+                    else
+                    {
+                        BinningListBox.SelectedIndex = 0;
+                        Binning = 1;
+                    }
+                }
+                /////////////************************////////////////
+
             } while ((abortFlag == false) && (LoopsCounter.Value > 0));
 
-        }
-
-        /// <summary>
-        /// Method to point mount at RA/Dec coordinates
-        /// </summary>
-        /// <param name="ra2000"></param>
-        /// <param name="dec2000"></param>
-        public static void SlewRADec(double ra2000, double dec2000)
-        {
-
-            //Convert ra and dec (J2000) to JNow
-            sky6Utils tsxu = new sky6Utils();
-            tsxu.Precess2000ToNow(ra2000, dec2000);
-            double raNow = tsxu.dOut0;
-            double decNow = tsxu.dOut1;
-            //Make sure this is synchronous wait.
-            sky6RASCOMTele tsxm = new sky6RASCOMTele { Asynchronous = 0 };
-            tsxm.SlewToRaDec(raNow, decNow, "Guide Target");
-            ClosedLoopSlew tsxcls = new ClosedLoopSlew();
-            tsxcls.exec();
-        }
-
-        /// <summary>
-        /// Method to point mount at Az/Alt coordinates
-        /// </summary>
-        /// <param name="az"></param>
-        /// <param name="alt"></param>
-        public static void SlewAzAlt(double az, double alt)
-        {
-            //Make sure this is synchronous wait.
-            sky6RASCOMTele tsxm = new sky6RASCOMTele { Asynchronous = 0 };
-            tsxm.SlewToAzAlt(az, alt, "");
         }
 
         /// <summary>
@@ -232,8 +227,10 @@ namespace PEC_Collect
         private void BinningListBox_SelectedIndexChanged(object sender, EventArgs e)
         {
             //Sets binning
-            Binning = BinningListBox.SelectedIndex+1;
+            Binning = BinningListBox.SelectedIndex + 1;
             return;
         }
+
+
     }
 }

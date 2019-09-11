@@ -356,12 +356,18 @@ namespace PEC_Collect
                 }
             }
 
-            guider.GuideStarX = XPosArr[bestOne] * asti.BinX;
-            guider.GuideStarY = YPosArr[bestOne] * asti.BinY;
-            asti.SubframeLeft = (int)(XPosArr[bestOne] - (TrackBoxSize / 2)) * asti.BinX;
-            asti.SubframeRight = (int)(XPosArr[bestOne] + (TrackBoxSize / 2)) * asti.BinX;
-            asti.SubframeTop = (int)(YPosArr[bestOne] - (TrackBoxSize / 2)) * asti.BinY;
-            asti.SubframeBottom = (int)(YPosArr[bestOne] + (TrackBoxSize / 2)) * asti.BinY;
+            guider.GuideStarX = XPosArr[bestOne] * guider.BinX;
+            guider.GuideStarY = YPosArr[bestOne] * guider.BinY;
+
+            asti.SubframeLeft = (int)(XPosArr[bestOne] - (TrackBoxSize / 2)) * guider.BinX;
+            asti.SubframeRight = (int)(XPosArr[bestOne] + (TrackBoxSize / 2)) * guider.BinX;
+            asti.SubframeTop = (int)(YPosArr[bestOne] - (TrackBoxSize / 2)) * guider.BinY;
+            asti.SubframeBottom = (int)(YPosArr[bestOne] + (TrackBoxSize / 2)) * guider.BinY;
+
+            guider.SubframeLeft = asti.SubframeLeft;
+            guider.SubframeRight = asti.SubframeRight;
+            guider.SubframeTop = asti.SubframeTop;
+            guider.SubframeBottom = asti.SubframeBottom;
 
             if (SelectArr[bestOne] != -1)
             {

@@ -99,7 +99,7 @@ namespace PEC_Collect
                 //need to some out of bounds checking here someday
                 //var aRow = timg.scanLine(yPix);
                 //double aVal = aRow[xPix];
-                double aVal = (double) timg.scanLine(yPix)[xPix];
+                double aVal = (double)timg.scanLine(yPix)[xPix];
                 return aVal;
             }
 
@@ -589,6 +589,67 @@ namespace PEC_Collect
         }
         #endregion
 
+        #region Dome
+        public static bool IsDomeTrackingUnderway()
+        {
+            //Test to see if a dome tracking operation is underway.
+            // If so, doing a IsGotoComplete will throw an Error 212.
+            // return true
+            // otherwise return false
+            sky6Dome tsxd = new sky6Dome();
+            if (tsxd.IsConnected != 0)
+            {
+                int testDomeTrack;
+                try { testDomeTrack = tsxd.IsGotoComplete; }
+                catch { return true; }
+                if (testDomeTrack == 0) return true;
+                else return false;
+            }
+            else return false;
+        }
+
+        public static void ToggleDomeCoupling()
+        {
+            //Uncouple dome tracking, then recouple dome tracking (synchronously)
+            sky6Dome tsxd = new sky6Dome();
+            if (tsxd.IsConnected != 0)
+            {
+                tsxd.IsCoupled = 0;
+                System.Threading.Thread.Sleep(1000);
+                tsxd.IsCoupled = 1;
+                //Wait for all dome activity to stop
+                while (IsDomeTrackingUnderway()) { System.Threading.Thread.Sleep(1000); }
+            }
+            return;
+        }
+
+        public static void DomeCouplingOn()
+        {
+            //Uncouple dome tracking, then recouple dome tracking (synchronously)
+            sky6Dome tsxd = new sky6Dome();
+            if (tsxd.IsConnected != 0)
+            {
+                tsxd.IsCoupled = 1;
+                System.Threading.Thread.Sleep(500);
+                while (IsDomeTrackingUnderway()) { System.Threading.Thread.Sleep(1000); }
+            }
+            return;
+        }
+
+        public static void DomeCouplingOff()
+        {
+            //Uncouple dome tracking, then recouple dome tracking (synchronously)
+            sky6Dome tsxd = new sky6Dome();
+            if (tsxd.IsConnected != 0)
+            {
+                tsxd.IsCoupled = 0;
+                System.Threading.Thread.Sleep(500);
+                while (IsDomeTrackingUnderway()) { System.Threading.Thread.Sleep(1000); }
+            }
+            return;
+        }
+        #endregion
+
         #region Image Linking
         public static class ImageSolution
         {
@@ -617,32 +678,112 @@ namespace PEC_Collect
                 return ipa;
             }
 
-            private static bool IsDomeTrackingUnderway()
-            {
-                //Test to see if a dome tracking operation is underway.
-                // If so, doing a IsGotoComplete will throw an Error 212.
-                // return true
-                // otherwise return false
-                sky6Dome tsxd = new sky6Dome();
-                int testDomeTrack;
-                try { testDomeTrack = tsxd.IsGotoComplete; }
-                catch { return true; }
-                if (testDomeTrack == 0) return true;
-                else return false;
-            }
+        }
 
-            private static void ToggleDomeCoupling()
+        #endregion
+
+        #region Slew
+
+
+        /// <summary>
+        /// Method to point mount at RA/Dec coordinates
+        /// </summary>
+        /// <param name="ra2000"></param>
+        /// <param name="dec2000"></param>
+        public static void SlewRADec(double ra2000, double dec2000)
+        {
+
+            //Convert ra and dec (J2000) to JNow
+            sky6Utils tsxu = new sky6Utils();
+            tsxu.Precess2000ToNow(ra2000, dec2000);
+            double raNow = tsxu.dOut0;
+            double decNow = tsxu.dOut1;
+            //Make sure this is synchronous wait.
+            //sky6RASCOMTele tsxm = new sky6RASCOMTele { Asynchronous = 0 };
+            //tsxm.SlewToRaDec(raNow, decNow, "Guide Target");
+            ReliableRADecSlew(raNow, decNow, "Guide Target");
+            TSXLink.DomeCouplingOff();
+            ClosedLoopSlew tsxcls = new ClosedLoopSlew();
+            try { tsxcls.exec(); }
+            catch (Exception ex)
             {
-                //Uncouple dome tracking, then recouple dome tracking (synchronously)
-                sky6Dome tsxd = new sky6Dome();
-                tsxd.IsCoupled = 0;
-                System.Threading.Thread.Sleep(1000);
-                tsxd.IsCoupled = 1;
-                //Wait for all dome activity to stop
-                while (IsDomeTrackingUnderway()) { System.Threading.Thread.Sleep(1000); }
+                TSXLink.DomeCouplingOn();
                 return;
             }
+            TSXLink.DomeCouplingOn();
         }
+
+        /// <summary>
+        /// Method to point mount at Az/Alt coordinates
+        /// </summary>
+        /// <param name="az"></param>
+        /// <param name="alt"></param>
+        public static void SlewAzAlt(double az, double alt)
+        {
+            //Make sure this is synchronous wait.
+            //sky6RASCOMTele tsxm = new sky6RASCOMTele { Asynchronous = 0 };
+            //tsxm.SlewToAzAlt(az, alt, "");
+            ReliableAzAltSlew(az, alt, "");
+            return;
+        }
+
+        public static void ReliableRADecSlew(double RA, double Dec, string name)
+        {
+            //
+            //Checks for dome tracking underway, waits half second if so -- doesn't solve race condition, but may avoid 
+            sky6RASCOMTele tsxt = new sky6RASCOMTele();
+            while (TSXLink.IsDomeTrackingUnderway()) System.Threading.Thread.Sleep(500);
+            int result = -1;
+            while (result != 0)
+            {
+                result = 0;
+                try { tsxt.SlewToRaDec(RA, Dec, name); }
+                catch (Exception ex) { result = ex.HResult - 1000; }
+            }
+            return;
+        }
+
+        public static void ReliableAzAltSlew(double RA, double Dec, string name)
+        {
+            //
+            //Checks for dome tracking underway, waits half second if so -- doesn't solve race condition, but may avoid 
+            sky6RASCOMTele tsxt = new sky6RASCOMTele();
+            while (TSXLink.IsDomeTrackingUnderway()) System.Threading.Thread.Sleep(500);
+            int result = -1;
+            while (result != 0)
+            {
+                result = 0;
+                try { tsxt.SlewToAzAlt(RA, Dec, name); }
+                catch (Exception ex) { result = ex.HResult - 1000; }
+            }
+            return;
+        }
+
+        public static int ReliableClosedLoopSlew(double RA, double Dec, string name)
+        {
+            //Tries to perform CLS without running into dome tracking race condition
+            //
+            ReliableRADecSlew(RA, Dec, name);
+            //Turn off tracking
+            TSXLink.DomeCouplingOff();
+            ClosedLoopSlew tsx_cl = new ClosedLoopSlew();
+            int clsStatus = 123;
+            while (clsStatus == 123)
+            {
+                try { clsStatus = tsx_cl.exec(); }
+                catch (Exception ex)
+                {
+                    clsStatus = ex.HResult - 1000;
+                };
+                if (clsStatus == 123) System.Threading.Thread.Sleep(500);
+            }
+            TSXLink.DomeCouplingOn();
+            return clsStatus;
+        }
+
+
+
+
         #endregion
 
         #region Plate Solution Structure
