@@ -64,6 +64,11 @@ namespace PEC_Collect
                 tsxc.Asynchronous = 0;
                 if (AtFocus3)
                 {
+                    //Set the starchart size to 3 degrees so we minimize the chance of finding a star on 
+                    //  the wrong side of the meridian, if auto-selecting star
+                    sky6StarChart tschrt = new sky6StarChart();
+                    tschrt.FieldOfView = 3.0;
+                    //run either of the focusing routings
                     try
                     {
                         int focStat = tsxc.AtFocus3(3,true);
@@ -85,6 +90,8 @@ namespace PEC_Collect
                         tsxc.Asynchronous = syncSave;
                         return ("Focus Check: " + e.Message);
                     }
+                    //Throw in a 5 sec wait to see if TSX can't set the telescope crosshairs back to original condition
+                    System.Threading.Thread.Sleep(5000);
                 }
                 return ("Focus Check: Focus successful");
             }

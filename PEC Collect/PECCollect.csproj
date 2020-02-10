@@ -27,8 +27,8 @@
     <ProductName>PEC Collect</ProductName>
     <PublisherName>TSXToolkit</PublisherName>
     <SuiteName>TSXToolkit</SuiteName>
-    <ApplicationRevision>28</ApplicationRevision>
-    <ApplicationVersion>1.3.0.%2a</ApplicationVersion>
+    <ApplicationRevision>40</ApplicationRevision>
+    <ApplicationVersion>1.4.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
     <BootstrapperEnabled>true</BootstrapperEnabled>
@@ -83,6 +83,7 @@
   <ItemGroup>
     <Compile Include="AutoFocus.cs" />
     <Compile Include="AutoGuide.cs" />
+    <Compile Include="FixLog.cs" />
     <Compile Include="FormPECCollect.cs">
       <SubType>Form</SubType>
     </Compile>

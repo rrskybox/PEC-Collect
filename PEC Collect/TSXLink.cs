@@ -763,6 +763,11 @@ namespace PEC_Collect
         {
             //Tries to perform CLS without running into dome tracking race condition
             //
+            //Slew close to target, with the dome chasing.
+            //Turn off tracking and do a CLS.  This prevents ceasing up 
+            // on the dome tracking error race condition
+            //Wait until the CLS completes, then turn the dome tracking back on
+            //
             ReliableRADecSlew(RA, Dec, name);
             //Turn off tracking
             TSXLink.DomeCouplingOff();

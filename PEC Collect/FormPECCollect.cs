@@ -30,13 +30,26 @@ namespace PEC_Collect
             catch { this.Text = " in Debug"; } //probably in debug, no version info available
             this.Text = "PEC Collect V" + this.Text;
             StarList.InstallDBQ();
-            BinningListBox.SelectedIndex = 0;
+            BinningComboBox.SelectedIndex = 0;
             FocusComboBox.SelectedIndex = 2;
+
+            // Acquire the version information and put it in the form header
+            try { this.Text = ApplicationDeployment.CurrentDeployment.CurrentVersion.ToString(); }
+            catch { this.Text = " in Debug"; } //probably in debug, no version info available
+            this.Text = "PEC Collect V" + this.Text;
         }
 
         public bool abortFlag = false;
 
-        public int Binning { get; set; } = 1;  // 1=1x1, 2=2x2, 3=3x3
+        public double ImagePA { get; set; } = 0;
+
+        public bool PADirection { get; set; } = true; //0 = true, 180 = false
+
+        public bool TargetIsWest { get; set; } = true; //true is west
+
+        public bool PAValid { get; set; } = false;
+
+        public int Binning { get; set; } = 1;  // 1=1x1, 2=2x2, 3=3x3, 4=4x4
 
         private void StartButton_Click(object sender, EventArgs e)
         {
@@ -57,6 +70,9 @@ namespace PEC_Collect
             //      Abort
             //Loop
 
+            //Abort autoguiding, if on  
+            AutoGuide.AutoGuideStop();
+
             //Set Binning
             AutoGuide.GuiderXBinning = Binning;
             AutoGuide.GuiderYBinning = Binning;
@@ -64,7 +80,7 @@ namespace PEC_Collect
             //Check orientation
             //slew to west side near meridian at 0 deg declination
             double altAtZeroDec = 90 - GetLocationLatitude();
-            TSXLink.ReliableAzAltSlew(183, altAtZeroDec,"");
+            TSXLink.ReliableAzAltSlew(183, altAtZeroDec, "");
 
             //  Take image, image link it and get Position Angle
             AstroImage asti = new AstroImage
@@ -86,23 +102,29 @@ namespace PEC_Collect
                 if (psln == null) return;
                 //Check for the image PA to be 0 +/- 3 degrees
                 //  if not then give option to opt out.
-                if (psln.ImagePA > 3)
-                {
-                    if (psln.ImagePA < 357)
-                    {
-                        DialogResult dr = MessageBox.Show(("PA " + (int)psln.ImagePA + "is not near zero.  Continue?"),
-                                                            "Camera Orientation Error",
-                                                            MessageBoxButtons.YesNo);
-                        if (dr == DialogResult.No) return;
-                    }
-                }
-                //Add info to text output:
-                if (psln.ImageIsMirrored) OutputTextBox.Text += "\n\r\n\r" + "  --> Plate Solved PA = " + ((int)psln.ImagePA).ToString() + " degrees and image is mirrored (check West in TCS).";
-                else OutputTextBox.Text += "\n\r\n\r" + "  -->Plate Solved PA = " + ((int)psln.ImagePA).ToString() + " degrees and image is not mirrored (do not check West in TCS).";
-            }
-            //Passed the orientation test, west side
+                InsertImagePAinLog(psln.ImagePA);
+                ImagePA = psln.ImagePA;
 
-            CompletionTime.Text = (DateTime.Now.AddMinutes((double)LoopsCounter.Value * (double)DurationMinutes.Value)).ToString("HH:mm:ss");
+                if (!PAValid)
+                {
+                    DialogResult dr = MessageBox.Show(("PA " + (int)psln.ImagePA + "is not near 0 or 180.  Continue?"),
+                                    "Camera Orientation Error",
+                                    MessageBoxButtons.YesNo);
+                    if (dr == DialogResult.No) return;
+                }
+                else
+                {
+                    bool checkWest = PADirection ^ psln.ImageIsMirrored ^ TargetIsWest;
+                    //Add info to text output:
+                    if (psln.ImageIsMirrored) OutputTextBox.Text += "\n\r\n\r" + "  --> Plate Solved PA = " + ((int)psln.ImagePA).ToString() + " degrees and image is mirrored.";
+                    else OutputTextBox.Text += "\n\r\n\r" + "  -->Plate Solved PA = " + ((int)psln.ImagePA).ToString() + " degrees and image is not mirrored.";
+                    if (checkWest) OutputTextBox.Text += "  Check West in TCS.";
+                    else OutputTextBox.Text += "  Do not check West in TCS.";
+                }
+                //Passed the orientation test, west side
+            }
+
+            CompletionTime.Text = (DateTime.Now.AddMinutes((double)LoopsCounter.Value * (double)DurationMinutes.Value + 2)).ToString("HH:mm:ss");
 
             //Loops
             do
@@ -126,12 +148,8 @@ namespace PEC_Collect
 
                 //Slew to just west of the meridian at 0 deg Declination
                 sky6StarChart tsxsc = new sky6StarChart();
-                TSXLink.ReliableAzAltSlew(183, altAtZeroDec,"");
+                TSXLink.ReliableAzAltSlew(183, altAtZeroDec, "");
                 //find a target star here
-                StarList.TargetStarSearch();
-                //slew to and center on the found star
-                int cls1 = TSXLink.ReliableClosedLoopSlew(StarList.TargetRA,StarList.TargetDec,StarList.TargetName);
-                if (cls1 != 0) return;
                 //check the focus using this star
                 // selected value = 0 for @focus2
                 // selected value = 1 for @focus3
@@ -149,10 +167,19 @@ namespace PEC_Collect
                     default:
                         break;
                 }
+                TSXLink.ReliableAzAltSlew(183, altAtZeroDec, "");
+                StarList.TargetStarSearch();
+                //slew to and center on the found star
+                int cls1 = TSXLink.ReliableClosedLoopSlew(StarList.TargetRA, StarList.TargetDec, StarList.TargetName);
+                if (cls1 != 0) return;
+                //return to base position, assuming that maybe @focus2 went to the wrong side
+
                 AutoGuide.GuiderXBinning = Binning;
                 AutoGuide.GuiderYBinning = Binning;
                 //Center up the target star as guide star
-                AutoGuide.SetAutoGuideStar();
+                // ** For tracking log purposes, pick the brightest star.
+                //AutoGuide.SetBestAutoGuideStar();
+                AutoGuide.PickAutoGuideStar(AutoGuide.GuideStarCriteria.Bright);
                 //Optimize it's exposure level
                 AutoGuide.GuideExposure = AutoGuide.OptimizeExposure();
                 //Start tracking
@@ -171,31 +198,15 @@ namespace PEC_Collect
                 //Wait is over, kill the autoguiding/tracking, increment the loop counter and loop
                 AutoGuide.AutoGuideStop();
                 LoopsCounter.Value -= 1;
+
+                //Correct log PA if PA as been checked.  TSX will not do this for you.
+                if (PACheckBox.Checked) FixLog.FixImagePA(ImagePA);
+
                 //Check for pause -- used for changing PEC Curves when experimenting
                 if (PauseCheckBox.Checked)
                 {
                     MessageBox.Show("Pausing for configuration changes, if any.");
                 }
-
-                /////////////************************///////////////
-                //Binning sensitivity experiment -- remove aftwr completed
-                //Check to see if BinSwap is enabled
-                //  if so, then if binning is 1x1, change to 2x2 and vis versa
-                if (BinSwapCheckbox.Checked)
-                {
-                    if (Binning == 1)
-                    {
-                        BinningListBox.SelectedIndex = 1;
-                        Binning = 2;
-                    }
-                    else
-                    {
-                        BinningListBox.SelectedIndex = 0;
-                        Binning = 1;
-                    }
-                }
-                /////////////************************////////////////
-
             } while ((abortFlag == false) && (LoopsCounter.Value > 0));
 
         }
@@ -224,13 +235,34 @@ namespace PEC_Collect
             AutoGuide.AutoGuideStop();
         }
 
-        private void BinningListBox_SelectedIndexChanged(object sender, EventArgs e)
+        private void InsertImagePAinLog(double pa)
         {
-            //Sets binning
-            Binning = BinningListBox.SelectedIndex + 1;
+            const int MaxOffset = 3;
+
+            PAValid = false;
+            if ((Between(pa, 0, MaxOffset)) || (Between(pa, (360 - MaxOffset), 360)))
+            {
+                PAValid = true;
+                PADirection = true; //0 degrees
+                return;
+            }
+
+            if (Between(pa, (180 - MaxOffset), (180 + MaxOffset)))
+            {
+                PAValid = true;
+                PADirection = false; //180 degrees
+                return;
+            }
+
+            PAValid = false;
             return;
         }
 
+        private bool Between(double a, double low, double high)
+        {
+            if ((a >= low) && (a <= high)) return true;
+            else return false;
+        }
 
     }
 }

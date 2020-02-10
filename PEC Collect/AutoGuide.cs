@@ -11,14 +11,14 @@ namespace PEC_Collect
         public static double GuideStarY { get; set; }
         public static double GuideExposure { get; set; } = 0.5;             //Default initial exposure is 0.5 seconds
         public static int GuiderXBinning { get; set; } = 2;                 //Default binning is 2x2
-        public static int GuiderYBinning { get; set; } = 2;  
+        public static int GuiderYBinning { get; set; } = 2;
         public static double GuideStarADU { get; set; } = 16000;            //Default target ADU is 16000
         public static double MaximumGuiderExposure { get; set; } = 4.0;     //Default maximum exposure time is 4 seconds
         public static double MinimumGuiderExposure { get; set; } = 0.1;     //Default minimum exposure time is 0.1seconds
 
 
         //MaxPixel-based method for getting the ADU in a trackbox-sized subframed image (NOte: could be hot pixel)
-        public static double GuideStarMaxPixel(double exposure)
+        public static double GetGuideStarMaxPixel(double exposure)
         {
             //Take a subframe image on the guider that is centered on a previously centered star
             //  and get the maximum pixel ADU 
@@ -57,7 +57,7 @@ namespace PEC_Collect
         }
 
         //SexTractor-based method for getting the ADU of the star at the center of a trackbox subframe
-        public static double GuideStarSextractor(double exposure)
+        public static double GetGuideStarADU(double exposure)
         {
             //Determines the ADU for the X/Y centroid of the maximum FWHM star in a subframe
             //
@@ -170,8 +170,8 @@ namespace PEC_Collect
             return true;
         }
 
-        //*** SetAutoGuideStar picks a guide star and places a subframe around it
-        public static bool SetAutoGuideStar()
+        //*** SetBestAutoGuideStar picks a guide star and places a subframe around it
+        public static bool SetBestAutoGuideStar()
         {
             // Subroutine takes a picture, picks a guide star, computes a subframe to put around it,
             //  loads the location and subframe into the autoguider
@@ -225,7 +225,7 @@ namespace PEC_Collect
 
             try
             {
-               bool sStat = tsex.SourceExtractGuider();
+                bool sStat = tsex.SourceExtractGuider();
             }
             catch (Exception ex)
             {
@@ -395,6 +395,278 @@ namespace PEC_Collect
             }
         }
 
+        //*** SetBrightestAutoGuideStar picks the brightest guide star and places a subframe around it
+        public enum GuideStarCriteria
+        {
+            Clean = 0,      //Best overall mix of attributes
+            Big = 1,        //Largest FWHM ignoring neighbors, but not edges
+            Bright = 2      //Brightest magnitude ignoring neighbors, but not edges
+        }
+        public static bool PickAutoGuideStar(GuideStarCriteria gsc)
+        {
+            // Subroutine takes a picture, picks a guide star, computes a subframe to put around it,
+            //  loads the location and subframe into the autoguider
+            //
+
+            // The only difference in this procedure from SetBestAutoGuideStar is that it finds the largest FWHM star rather than
+            //   the average, and this does not exclude prospects because they have neighbors.
+
+            // Subroutine picks a guide star, computes a subframe to put around it based on current TSX settings
+            // and loads the location and subframe into the autoguider
+            // 
+            double MagWeight;
+            double FWHMWeight;
+            double ElpWeight;
+            double ClsWeight;
+            bool CheckNeighbors;
+
+
+            // Algorithm:
+            // 
+            //   Compute optimality and normalizaton values (see below) 
+            //   Eliminate all points near edge and with neighbors
+            //   Compute optimality differential and normalize, and add
+            //   Select best (least sum) point
+            // 
+            // Normalized deviation from optimal where optimal is the best value for each of the four catagories:
+            //   Magnitude optimal is lowest magnitude
+            //   FWHM optimal is average FWHM
+            //   Ellipticity optimal is lowest ellipticity: round = 1
+            //   Class optimal is highest class: 0 is galaxy, 1 is star
+            // 
+            // Normalized means adjusted against the range of highest to lowest becomes 1 to 0, unless there is only one datapoint
+            // 
+            // 
+
+            AstroImage asti = new AstroImage
+            {
+                Camera = AstroImage.CameraType.Imaging,
+                SubFrame = 0,
+                Frame = AstroImage.ImageType.Light,
+                BinX = GuiderXBinning,
+                BinY = GuiderYBinning,
+                Delay = 0,
+                Exposure = GuideExposure,
+                ImageReduction = AstroImage.ReductionType.AutoDark
+            };
+            TSXLink.Camera guider = new TSXLink.Camera(asti) { AutoSaveOn = 1 };
+
+            //Take an image f
+            int camResult = guider.GetImage();
+
+            //acquire the current trackbox size (need it later)
+            int trackBoxSize = guider.TrackBoxX;
+
+            TSXLink.SexTractor tsex = new TSXLink.SexTractor();
+
+            try
+            {
+                bool sStat = tsex.SourceExtractGuider();
+            }
+            catch (Exception ex)
+            {
+                // Just close up, TSX will spawn error window
+                MessageBox.Show("Star Extracdtion Error: " + ex.Message);
+                return false;
+            }
+
+            int Xsize = tsex.WidthInPixels;
+            int Ysize = tsex.HeightInPixels;
+
+            // Collect astrometric light source data from the image linking into single index arrays: 
+            //  magnitude, fmhm, ellipsicity, x and y positionc
+            //
+
+            double[] MagArr = tsex.GetSourceExtractionArray(TSXLink.SexTractor.SourceExtractionType.sexMagnitude);
+            int starCount = MagArr.Length;
+
+            if (starCount == 0)
+            {
+                tsex.Close();
+                return false;
+            }
+            double[] FWHMArr = tsex.GetSourceExtractionArray(TSXLink.SexTractor.SourceExtractionType.sexFWHM);
+            double[] XPosArr = tsex.GetSourceExtractionArray(TSXLink.SexTractor.SourceExtractionType.sexX);
+            double[] YPosArr = tsex.GetSourceExtractionArray(TSXLink.SexTractor.SourceExtractionType.sexY);
+            double[] ElpArr = tsex.GetSourceExtractionArray(TSXLink.SexTractor.SourceExtractionType.sexEllipticity);
+            double[] ClsArr = tsex.GetSourceExtractionArray(TSXLink.SexTractor.SourceExtractionType.sexClass);
+
+            // Get some useful statistics
+            // Max and min magnitude
+            // Max and min FWHM
+            // Max and min ellipticity
+            // max and min class
+            // Average FWHM
+
+            double maxMag = MagArr[0];
+            double minMag = MagArr[0];
+            double maxFWHM = FWHMArr[0];
+            double minFWHM = FWHMArr[0];
+            double maxElp = ElpArr[0];
+            double minElp = ElpArr[0];
+            double maxCls = ClsArr[0];
+            double minCls = ClsArr[0];
+
+            double avgFWHM = 0;
+
+            for (int i = 0; i < starCount; i++)
+            {
+                if (MagArr[i] < minMag) { minMag = MagArr[i]; }
+                if (MagArr[i] > maxMag) { maxMag = MagArr[i]; }
+                if (FWHMArr[i] < minFWHM) { minFWHM = FWHMArr[i]; }
+                if (FWHMArr[i] > maxFWHM) { maxFWHM = FWHMArr[i]; }
+                if (ElpArr[i] < minElp) { minElp = ElpArr[i]; }
+                if (ElpArr[i] > maxElp) { maxElp = ElpArr[i]; }
+                if (ClsArr[i] < minCls) { minCls = ClsArr[i]; }
+                if (ClsArr[i] > maxCls) { maxCls = ClsArr[i]; }
+                avgFWHM += FWHMArr[i];
+            }
+
+            avgFWHM /= starCount;
+
+            // Create a set of "best" values
+            double optMag;       // Magnitudes increase with negative values
+            double optFWHM;     // Looking for the closest to maximum FWHM
+            double optElp;     // Want the minimum amount of elongation
+            double optCls;      // 1 = star,0 = galaxy
+
+            //Set selection optimization based on criteria type (maybe more in the future)
+            switch (gsc)
+
+            {
+                case GuideStarCriteria.Clean:
+                    optMag = minMag;       // Magnitudes increase with negative values
+                    optFWHM = avgFWHM;     // Looking for the closest to average FWHM
+                    optElp = minElp;     // Want the minimum amount of elongation
+                    optCls = maxCls;      // Want closest to star:  1 = star,0 = galaxy
+                    MagWeight = 1;         //?Equal weighting
+                    FWHMWeight = 1;         //?Equal weighting
+                    ElpWeight = 1;         //?Equal weighting
+                    ClsWeight = 1;         //?Equal weighting
+                    CheckNeighbors = true;
+                    break;
+                case GuideStarCriteria.Big:
+                    optMag = minMag;       // Magnitudes increase with negative values
+                    optFWHM = maxFWHM;     // Looking for the closest to maximum FWHM
+                    optElp = minElp;     // Want the minimum amount of elongation
+                    optCls = maxCls;      // Want closest to star:  1 = star,0 = galaxy
+                    MagWeight = 1;         //?Equal weighting
+                    FWHMWeight = 1;         //?Equal weighting
+                    ElpWeight = 0;          //Don't care 
+                    ClsWeight = 0;          //Don't care
+                    CheckNeighbors = true;
+                    break;
+                case GuideStarCriteria.Bright:
+                    optMag = minMag;       // Magnitudes increase with negative values
+                    optFWHM = maxFWHM;     // Looking for the closest to average FWHM
+                    optElp = minElp;     // Want the minimum amount of elongation
+                    optCls = maxCls;      // Want closest to star:  1 = star,0 = galaxy
+                    MagWeight = 1;         //?Equal weighting
+                    FWHMWeight = 1;         //Don't care
+                    ElpWeight = 1;          //Don't care
+                    ClsWeight = 1;          //Don't care
+                    CheckNeighbors = true;
+                    break;
+                default:
+                    optMag = minMag;       // Magnitudes increase with negative values
+                    optFWHM = avgFWHM;     // Looking for the closest to average FWHM
+                    optElp = minElp;     // Want the minimum amount of elongation
+                    optCls = maxCls;      // Want closest to star:  1 = star,0 = galaxy
+                    MagWeight = 1;         //?Equal weighting
+                    FWHMWeight = 1;         //?Equal weighting
+                    ElpWeight = 1;         //?Equal weighting
+                    ClsWeight = 1;         //?Equal weighting
+                    CheckNeighbors = true;
+                    break;
+            }
+
+            // Create a set of ranges
+            double rangeMag = maxMag - minMag;
+            double rangeFWHM = maxFWHM - minFWHM;
+            double rangeElp = maxElp - minElp;
+            double rangeCls = maxCls - minCls;
+            // Create interrum variables for weights
+            double normMag;
+            double normFWHM;
+            double normElp;
+            double normCls;
+            // Count keepers for statistics
+            int SourceCount = 0;
+            int EdgeCount = 0;
+            int NeighborCount = 0;
+            double normPt;
+            int edgekeepout;
+
+            // Create a selection array to store normilized and summed difference values
+            double[] NormArr = new double[starCount];
+
+            // Convert all points to normalized differences, checking for zero ranges (e.g.single or identical data points)
+            for (int i = 0; i < starCount; i++)
+            {
+                if (rangeMag != 0) { normMag = 1 - Math.Abs(optMag - MagArr[i]) / rangeMag; }
+                else { normMag = 0; }
+                if (rangeFWHM != 0) { normFWHM = 1 - Math.Abs(optFWHM - FWHMArr[i]) / rangeFWHM; }
+                else { normFWHM = 0; }
+                if (rangeElp != 0) { normElp = 1 - Math.Abs(optElp - ElpArr[i]) / rangeElp; }
+                else { normElp = 0; }
+                if (rangeCls != 0) { normCls = 1 - Math.Abs(optCls - ClsArr[i]) / rangeCls; }
+                else { normCls = 0; }
+
+                // Sum the normalized points, weight and store value
+                normPt = ((normMag * MagWeight) + (normFWHM * FWHMWeight) + (normElp * ElpWeight) + (normCls * ClsWeight));
+                SourceCount += 1;
+
+                // Tentatively assign nomalized value array the normalized value
+                NormArr[i] = normPt;
+                // Remove neighbors and edge liers
+                edgekeepout = trackBoxSize;
+                if (IsOnEdge((int)XPosArr[i], (int)YPosArr[i], Xsize, Ysize, edgekeepout)) { NormArr[i] = -1; }
+                if (CheckNeighbors)
+                {
+                    for (int j = i + 1; j < NormArr.Length - 1; j++)
+                        if (IsNeighbor((int)XPosArr[i], (int)YPosArr[i], (int)XPosArr[j], (int)YPosArr[j], trackBoxSize)) { NormArr[i] = -2; }
+                }
+            }
+
+            // Now find the best remaining entry
+
+            int bestOne = 0;
+            for (int i = 0; i < starCount; i++) { if (NormArr[i] > NormArr[bestOne]) { bestOne = i; } }
+
+            //Register the results
+            guider.GuideStarX = XPosArr[bestOne] * guider.BinX;
+            guider.GuideStarY = YPosArr[bestOne] * guider.BinY;
+
+            asti.SubframeLeft = (int)(XPosArr[bestOne] - (trackBoxSize / 2)) * guider.BinX;
+            asti.SubframeRight = (int)(XPosArr[bestOne] + (trackBoxSize / 2)) * guider.BinX;
+            asti.SubframeTop = (int)(YPosArr[bestOne] - (trackBoxSize / 2)) * guider.BinY;
+            asti.SubframeBottom = (int)(YPosArr[bestOne] + (trackBoxSize / 2)) * guider.BinY;
+
+            guider.SubframeLeft = asti.SubframeLeft;
+            guider.SubframeRight = asti.SubframeRight;
+            guider.SubframeTop = asti.SubframeTop;
+            guider.SubframeBottom = asti.SubframeBottom;
+                       
+            if (NormArr[bestOne] != -1)
+            {
+                GuideStarX = guider.GuideStarX;
+                GuideStarY = guider.GuideStarY;
+                tsex.Close();
+                return true;
+            }
+            else
+            {
+                // Debug code:  run statistics -- only if (total failure
+                for (int i = 0; i < SourceCount; i++)
+                {
+                    if (NormArr[i] == -1) { EdgeCount += 1; }
+                    if (NormArr[i] == -2) { NeighborCount += 1; }
+                }
+                tsex.Close();
+                return false;
+            }
+        }
+
         //*** Optimize Exposure determines the best exposure time for the target star
         public static double OptimizeExposure()
         {
@@ -421,7 +693,7 @@ namespace PEC_Collect
                 //Take a subframe image
                 //Get maximum pixels ADU
                 //
-                double maxPixel = GuideStarSextractor(exposure);  //Uses SexTractor engine
+                double maxPixel = GetGuideStarADU(exposure);  //Uses SexTractor engine
                 ;
                 //Check through too low, too high and just right
                 if (maxPixel < 500)  //way too low
