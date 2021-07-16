@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using TheSkyXLib;
 using System.Windows.Forms;
 
+
 namespace PEC_Collect
 {
     public static class AutoFocus

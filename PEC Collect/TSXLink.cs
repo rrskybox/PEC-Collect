@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Windows.Forms;
+using System.Linq;
 using TheSkyXLib;
+
+
 
 //Library of methods and data for interfacing to TSX through .NET (COM) library
 namespace PEC_Collect
@@ -106,6 +109,13 @@ namespace PEC_Collect
             public double[] GetSourceExtractionArray(SourceExtractionType dataIndex)
             {
                 {
+                    //Array.ConvertAll((Link.TSXSend(TSXCLASS + "InventoryArray(" + InventoryIndex.ToString() + ")")).Split(','), Double.Parse);
+                    //Array.ConvertAll<object, double>(objects, o => (double)o);
+                    //double[] sexArray = Array.ConvertAll(timg.InventoryArray((int)dataIndex), double.Parse);
+                    //var doub = obj.Cast<double>();
+                    //double[] sexArray = Array.ConvertAll<object, double>(timg.InventoryArray((int)dataIndex), o => (double)o);
+                    //double[] sexArray = timg.InventoryArray((int)dataIndex).Cast<double>();
+                    //double[] sexArray = timg.InventoryArray((int)dataIndex);
                     object[] iA = timg.InventoryArray((int)dataIndex);
                     double[] sexArray = ConvertDoubleArray(iA);
                     return sexArray;
@@ -117,6 +127,9 @@ namespace PEC_Collect
             {
                 {
                     object[] iA = timg.InventoryArray((int)dataIndex);
+                    //List<double> sexArray = timg.InventoryArray((int)dataIndex).Cast<double>();
+                    //double[] iA = timg.InventoryArray((int)dataIndex);
+                    //List<double> sexArray = iA.ToList<double>();
                     List<double> sexArray = ConvertDoubleList(iA);
                     return sexArray;
                 }
@@ -425,7 +438,7 @@ namespace PEC_Collect
                     { int calstat = tsxc.Calibrate(0); } //1 for AO, anything else for not AO(autoguider)            
                     catch { return; }
                 //wait for completion;
-                while (tsxc.State == TheSkyXLib.ccdsoftCameraState.cdStateCalibrate)
+                while (tsxc.State == ccdsoftCameraState.cdStateCalibrate)
                 {
                     System.Windows.Forms.Application.DoEvents();
                     System.Threading.Thread.Sleep(1000);
@@ -439,7 +452,7 @@ namespace PEC_Collect
                     catch
                     { return; }
                     //wait for completion;
-                    while (tsxc.State == TheSkyXLib.ccdsoftCameraState.cdStateCalibrate)
+                    while (tsxc.State == ccdsoftCameraState.cdStateCalibrate)
                     {
                         System.Windows.Forms.Application.DoEvents();
                         System.Threading.Thread.Sleep(1000);
@@ -655,7 +668,7 @@ namespace PEC_Collect
         {
             public static PlateSolution PlateSolve(string path)
             {
-                ImageLink tsxl = new TheSkyXLib.ImageLink
+                ImageLink tsxl = new ImageLink
                 {
                     pathToFITS = path
                 };
@@ -705,7 +718,7 @@ namespace PEC_Collect
             TSXLink.DomeCouplingOff();
             ClosedLoopSlew tsxcls = new ClosedLoopSlew();
             try { tsxcls.exec(); }
-            catch (Exception ex)
+            catch
             {
                 TSXLink.DomeCouplingOn();
                 return;

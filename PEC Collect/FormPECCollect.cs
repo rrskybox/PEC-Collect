@@ -18,6 +18,7 @@ using System.Deployment.Application;
 using System.Windows.Forms;
 using TheSkyXLib;
 
+
 namespace PEC_Collect
 {
     public partial class FormPECCollect : Form
@@ -220,7 +221,7 @@ namespace PEC_Collect
             //Get and return the latitude of the current TSX star chart (as set by location)
             sky6StarChart tsxsc = new sky6StarChart();
             tsxsc.DocumentProperty(Sk6DocumentProperty.sk6DocProp_Latitude);
-            double lat = tsxsc.DocPropOut;
+            double lat = (double)tsxsc.DocPropOut;
             return (lat);
         }
 

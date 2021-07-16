@@ -1,10 +1,10 @@
 ﻿using System.Linq;
-using TheSkyXLib;
 using System.Xml.Linq;
 using System;
 using System.IO;
 using System.Reflection;
 using System.Windows.Forms;
+using TheSkyXLib;
 
 namespace PEC_Collect
 {
@@ -77,11 +77,11 @@ namespace PEC_Collect
             {
                 tsx_oi.Index = i;
                 tsx_oi.Property(Sk6ObjectInformationProperty.sk6ObjInfoProp_NAME1);
-                gName = tsx_oi.ObjInfoPropOut;
+                gName = (string)tsx_oi.ObjInfoPropOut;
                 tsx_oi.Property(Sk6ObjectInformationProperty.sk6ObjInfoProp_RA_2000);
-                gRA = tsx_oi.ObjInfoPropOut;
+                gRA = (double)tsx_oi.ObjInfoPropOut;
                 tsx_oi.Property(Sk6ObjectInformationProperty.sk6ObjInfoProp_DEC_2000);
-                gDec = tsx_oi.ObjInfoPropOut;
+                gDec = (double)tsx_oi.ObjInfoPropOut;
                 if (gName.Contains("HIP"))
                 {
                     tSeparation = ComputeDistance(centerRA, centerDec, gRA, gDec);
