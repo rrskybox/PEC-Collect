@@ -16,7 +16,7 @@
 using System;
 using System.Deployment.Application;
 using System.Windows.Forms;
-using TheSkyXLib;
+using TheSky64Lib;
 
 
 namespace PEC_Collect

@@ -4,7 +4,7 @@ using System;
 using System.IO;
 using System.Reflection;
 using System.Windows.Forms;
-using TheSkyXLib;
+using TheSky64Lib;
 
 namespace PEC_Collect
 {
