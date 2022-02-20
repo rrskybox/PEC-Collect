@@ -27,7 +27,7 @@
     <ProductName>PEC Collect</ProductName>
     <PublisherName>TSXToolkit</PublisherName>
     <SuiteName>TSXToolkit</SuiteName>
-    <ApplicationRevision>42</ApplicationRevision>
+    <ApplicationRevision>43</ApplicationRevision>
     <ApplicationVersion>1.4.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>

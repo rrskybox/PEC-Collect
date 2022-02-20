@@ -668,10 +668,16 @@ namespace PEC_Collect
         {
             public static PlateSolution PlateSolve(string path)
             {
+                sky6MyFOVs tsxf = new sky6MyFOVs();
+                tsxf.Property(FOVName(), 0, sk6MyFOVProperty.sk6MyFOVProp_Scale);
+                double scale = tsxf.OutVar;
+
                 ImageLink tsxl = new ImageLink
                 {
                     pathToFITS = path
                 };
+                //set Scale
+                tsxl.scale = scale;
                 try
                 { tsxl.execute(); }
                 catch (Exception ex)
@@ -691,6 +697,24 @@ namespace PEC_Collect
                 return ipa;
             }
 
+        }
+
+        private static string FOVName()
+        {
+            string fovName = null;
+            sky6MyFOVs tsxf = new sky6MyFOVs();
+            for (int i = 0; i < tsxf.Count; i++)
+            {
+                tsxf.Name(i);
+                fovName = tsxf.OutString;
+                tsxf.Property(fovName, 0, sk6MyFOVProperty.sk6MyFOVProp_Visible);
+                double vis = tsxf.OutVar;
+                if (vis == 1)
+                {
+                    return fovName;
+                }
+            }
+            return null;
         }
 
         #endregion

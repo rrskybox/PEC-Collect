@@ -23,6 +23,8 @@ namespace PEC_Collect
 {
     public partial class FormPECCollect : Form
     {
+        public string UserImageDirectoryPath { get; set; }
+
         public FormPECCollect()
         {
             InitializeComponent();
@@ -38,6 +40,10 @@ namespace PEC_Collect
             try { this.Text = ApplicationDeployment.CurrentDeployment.CurrentVersion.ToString(); }
             catch { this.Text = " in Debug"; } //probably in debug, no version info available
             this.Text = "PEC Collect V" + this.Text;
+
+            //Get user's directory for SoftwareBisque
+            UserImageDirectoryPath = System.Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)
+                + @"\Documents\Software Bisque\TheSky Professional Edition 64\Camera AutoSave\Imager\";
         }
 
         public bool abortFlag = false;
@@ -108,7 +114,7 @@ namespace PEC_Collect
 
                 if (!PAValid)
                 {
-                    DialogResult dr = MessageBox.Show(("PA " + (int)psln.ImagePA + "is not near 0 or 180.  Continue?"),
+                    DialogResult dr = MessageBox.Show(("PA " + (int)psln.ImagePA + " is not near 0 or 180.  Continue?"),
                                     "Camera Orientation Error",
                                     MessageBoxButtons.YesNo);
                     if (dr == DialogResult.No) return;
@@ -201,7 +207,7 @@ namespace PEC_Collect
                 LoopsCounter.Value -= 1;
 
                 //Correct log PA if PA as been checked.  TSX will not do this for you.
-                if (PACheckBox.Checked) FixLog.FixImagePA(ImagePA);
+                if (PACheckBox.Checked) FixLog.FixImagePA(UserImageDirectoryPath, ImagePA);
 
                 //Check for pause -- used for changing PEC Curves when experimenting
                 if (PauseCheckBox.Checked)

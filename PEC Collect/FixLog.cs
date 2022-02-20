@@ -11,12 +11,12 @@ namespace PEC_Collect
     {
         //Class contains routines to fix last log entries, if possible
         //
-        public static void FixImagePA(double currentpa)
+        public static void FixImagePA(string sbPath, double currentpa)
         {
             //changes the "unknown" in the image pa to a value
             //
             //Look up current directory
-            string cDir = FindCurrentDir();
+            string cDir = FindCurrentDir(sbPath);
             string logFilename = FindLastLog(cDir);
             //construct file path names
             string logFilePath = logFilename;
@@ -65,23 +65,21 @@ namespace PEC_Collect
             return hFile;
         }
 
-        private static string FindCurrentDir()
+        private static string FindCurrentDir(string sbPath)
         {
             //Returns the current log directory for imager
-            //Looking in user... /SoftwareBisque../CameraAutosave/Imager/"current date"/"latest log"
+            //Looking in directory path:  user... /SoftwareBisque../CameraAutosave/Imager/<current date>/<most recent>.log"
 
-            string LogDirectoryFullPath = @"C:\Users\" + System.Environment.UserName
-                + @"\Documents\Software Bisque\TheSkyX Professional Edition\Camera AutoSave\Imager\"
+            string LogDirectoryFullPath = sbPath
                 + DateTime.Now.ToString("MMMM dd yyyy");
-            if (Directory.Exists(LogDirectoryFullPath)) return LogDirectoryFullPath;
+            if (Directory.Exists(LogDirectoryFullPath)) 
+                return LogDirectoryFullPath;
             else
             {
-                LogDirectoryFullPath = @"C:\Users\" + System.Environment.UserName
-                + @"\Documents\Software Bisque\TheSkyX Professional Edition\Camera AutoSave\Imager\"
+                LogDirectoryFullPath = sbPath
                 + (DateTime.Now - TimeSpan.FromDays(1)).ToString("MMMM dd yyyy");
             }
             return LogDirectoryFullPath;
         }
-
     }
 }
